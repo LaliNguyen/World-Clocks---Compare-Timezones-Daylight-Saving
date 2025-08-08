@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>World Clocks & More | Lulssu's Site</title>
+<style>
+  :root {
+    --bg-light: #f0f4f8;
+    --bg-dark: #1e2a38;
+    --text-light: #1e2a38;
+    --text-dark: #f0f4f8;
+    --accent: #4a90e2;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    transition: background-color 0.5s, color 0.5s;
+    padding: 1rem;
+  }
+  body.dark {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+  }
+  header {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  h1 {
+    margin: 0;
+    font-weight: 700;
+  }
+  #date {
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+  }
+  #clocks {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 1000px;
+  }
+  .clock {
+    background: var(--accent);
+    color: white;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    min-width: 160px;
+    box-shadow: 0 6px 15px rgba(74,144,226,0.5);
+    user-select: none;
+  }
+  .city {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+  }
+  .time {
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+  .daynight {
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+    font-style: italic;
+  }
+  #quote {
+    margin: 2rem auto 0;
+    font-style: italic;
+    max-width: 600px;
+    font-size: 1.2rem;
+    padding: 0 1rem;
+    text-align: center;
+  }
+  #theme-toggle {
+    margin-top: 1.5rem;
+    background: none;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  #theme-toggle:hover {
+    background-color: var(--accent);
+    color: white;
+  }
+  footer {
+    margin-top: auto;
+    padding: 1rem 0;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    text-align: center;
+  }
+  /* Social share buttons */
+  #share {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .share-btn {
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.3rem;
+    user-select: none;
+    box-shadow: 0 4px 10px rgba(74,144,226,0.5);
+  }
+  .share-btn:hover {
+    opacity: 0.8;
+  }
+  @media (max-width: 480px) {
+    .clock {
+      min-width: 140px;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+    .time {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>World Clocks & More</h1>
+  <div id="date">Loading date...</div>
+</header>
+
+<section id="clocks">
+  <div class="clock" data-city="New York" data-offset="-4">
+    <div class="city">New York (EDT)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="London" data-offset="1">
+    <div class="city">London (BST)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="Tokyo" data-offset="9">
+    <div class="city">Tokyo (JST)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="Sydney" data-offset="10">
+    <div class="city">Sydney (AEST)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="Mumbai" data-offset="5.5">
+    <div class="city">Mumbai (IST)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="Moscow" data-offset="3">
+    <div class="city">Moscow (MSK)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="Paris" data-offset="2">
+    <div class="city">Paris (CEST)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="Los Angeles" data-offset="-7">
+    <div class="city">Los Angeles (PDT)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+  <div class="clock" data-city="Dubai" data-offset="4">
+    <div class="city">Dubai (GST)</div>
+    <div class="time">--:--:--</div>
+    <div class="daynight">Loading...</div>
+  </div>
+</section>
+
+<div id="quote">Loading inspirational quote...</div>
+
+<button id="theme-toggle" aria-label="Toggle light/dark theme">Switch to Dark Mode</button>
+
+<div id="share">
+  <a href="#" class="share-btn" id="share-twitter" title="Share on Twitter" aria-label="Share on Twitter">🐦</a>
+  <a href="#" class="share-btn" id="share-facebook" title="Share on Facebook" aria-label="Share on Facebook">📘</a>
+</div>
+
+<footer>Made with ❤️ by Lulssu</footer>
+
+<script>
+  const clocks = document.querySelectorAll('.clock');
+
+  function updateClocks() {
+    const now = new Date();
+    clocks.forEach(clock => {
+      const offset = Number(clock.dataset.offset);
+      // Calculate local time by offset from UTC
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const localTime = new Date(utc + (3600000 * offset));
+      const hours = localTime.getHours().toString().padStart(2, '0');
+      const minutes = localTime.getMinutes().toString().padStart(2, '0');
+      const seconds = localTime.getSeconds().toString().padStart(2, '0');
+      clock.querySelector('.time').textContent = `${hours}:${minutes}:${seconds}`;
+
+      // Day or Night (6:00 to 18:00 day)
+      const isDay = localTime.getHours() >= 6 && localTime.getHours() < 18;
+      clock.querySelector('.daynight').textContent = isDay ? 'Daytime ☀️' : 'Nighttime 🌙';
+    });
+  }
+
+  function updateDate() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('date').textContent = now.toLocaleDateString(undefined, options);
+  }
+
+  const quotes = [
+    "Believe you can and you're halfway there.",
+    "Do one thing every day that scares you.",
+    "Dream big and dare to fail.",
+    "The best time to plant a tree was 20 years ago. The second best time is now.",
+    "Keep going. Be all in.",
+    "Stay foolish to stay sane.",
+    "Whatever you are, be a good one.",
+    "Turn your wounds into wisdom.",
+    "Stay hungry. Stay foolish.",
+    "Success is not final, failure is not fatal: It is the courage to continue that counts."
+  ];
+
+  function updateQuote() {
+    const index = new Date().getDate() % quotes.length; // changes daily
+    document.getElementById('quote').textContent = `💡 "${quotes[index]}"`;
+  }
+
+  const themeToggle = document.getElementById('theme-toggle');
+
+  function setTheme(isDark) {
+    if (isDark) {
+      document.body.classList.add('dark');
+      themeToggle.textContent = 'Switch to Light Mode';
+    } else {
+      document.body.classList.remove('dark');
+      themeToggle.textContent = 'Switch to Dark Mode';
+    }
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.body.classList.contains('dark');
+    setTheme(!isDark);
+  });
+
+  // Load theme from localStorage
+  const savedTheme = localStorage.getItem('theme');
+  setTheme(savedTheme === 'dark');
+
+  // Initial update + interval for time
+  updateClocks();
+  updateDate();
+  updateQuote();
+  setInterval(() => {
+    updateClocks();
+    updateDate();
+  }, 1000);
+
+  // Social share links
+  const shareUrl = encodeURIComponent(window.location.href);
+  const shareText = encodeURIComponent("Check out this cool World Clocks & More website!");
+
+  document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
+  document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+</script>
+</body>
+</html>
