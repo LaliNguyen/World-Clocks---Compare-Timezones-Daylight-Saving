@@ -3,486 +3,480 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="World Clock - Digital and Analog clocks for multiple cities with draggable layout and dark mode." />
-<title>World Clock | LulssuLabs</title>
+<title>World Clock - Multiple Timezones with Daylight Saving & Analog/Digital View</title>
 <style>
   :root {
-    --bg-light: #f5f7fa;
-    --bg-dark: #121212;
-    --card-light: #fff;
-    --card-dark: #1e1e1e;
-    --text-light: #222;
-    --text-dark: #eee;
-    --accent: #0077ff;
-    --shadow-light: rgba(0, 0, 0, 0.1);
-    --shadow-dark: rgba(0, 0, 0, 0.7);
+    --primary-color: #4a90e2;
+    --secondary-color: #e94e77;
+    --background-light: #f0f2f5;
+    --background-dark: #1e1e1e;
+    --text-light: #333;
+    --text-dark: #ddd;
   }
   body {
-    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--bg-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--background-light);
     color: var(--text-light);
-    transition: background 0.3s, color 0.3s;
+    margin: 0; padding: 30px 20px 50px;
     min-height: 100vh;
-    display: flex; flex-direction: column;
-  }
-  body.dark {
-    background: var(--bg-dark);
-    color: var(--text-dark);
-  }
-  header {
-    padding: 1rem 2rem;
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-align: center;
-    background: var(--accent);
-    color: #fff;
-    user-select: none;
-  }
-  main {
-    flex-grow: 1;
-    padding: 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: center;
-    min-height: 60vh;
-  }
-  .clock-card {
-    background: var(--card-light);
-    box-shadow: 0 4px 12px var(--shadow-light);
-    border-radius: 16px;
-    width: 280px;
-    padding: 1.5rem 1rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark {
+    background: var(--background-dark);
+    color: var(--text-dark);
+  }
+
+  h1 {
+    font-weight: 700;
+    margin-bottom: 10px;
+    user-select: none;
+  }
+
+  #controls {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  #addClockInput {
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    outline-offset: 2px;
+  }
+  #addClockBtn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #addClockBtn:hover {
+    background: #2f6dc7;
+  }
+
+  #toggleThemeBtn {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    background: var(--primary-color);
+    border: none;
+    padding: 10px 15px;
+    color: white;
+    font-weight: 700;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
+  }
+  #toggleThemeBtn:hover {
+    background: #2f6dc7;
+  }
+
+  #clocks {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+    user-select: none;
+  }
+
+  .clock-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
+    padding: 20px;
+    width: 240px;
     cursor: grab;
     user-select: none;
-    transition: background 0.3s, box-shadow 0.3s;
+    transition: background 0.3s, color 0.3s;
     position: relative;
   }
   body.dark .clock-card {
-    background: var(--card-dark);
-    box-shadow: 0 4px 12px var(--shadow-dark);
+    background: #2c2c2c;
+    box-shadow: 0 6px 15px rgba(74, 144, 226, 0.6);
+    color: var(--text-dark);
   }
   .clock-card:active {
     cursor: grabbing;
   }
-  .city-name {
+
+  .clock-header {
     font-weight: 700;
-    font-size: 1.3rem;
-    margin-bottom: 0.4rem;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  .digital-clock {
-    font-size: 2.8rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    margin-bottom: 1rem;
-    font-family: 'Courier New', Courier, monospace;
+  .clock-header small {
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: #666;
   }
+  body.dark .clock-header small {
+    color: #bbb;
+  }
+
+  /* Analog Clock */
   .analog-clock {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border: 6px solid var(--accent);
+    width: 180px;
+    height: 180px;
+    background: white;
+    border: 6px solid var(--primary-color);
     border-radius: 50%;
-    background: var(--bg-light);
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.1);
-    margin-bottom: 1rem;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+    margin: 0 auto 15px auto;
   }
   body.dark .analog-clock {
-    background: #222;
+    background: #1e1e1e;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.7);
   }
-  .analog-clock .number {
+  .analog-clock .center-dot {
     position: absolute;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--accent);
-    user-select: none;
+    top: 50%; left: 50%;
+    width: 14px; height: 14px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
   }
-  /* Position numbers 1 to 12 around clock */
-  .number1  { top: 10px; left: 50%; transform: translateX(-50%); }
-  .number2  { top: 28px; right: 20px; }
-  .number3  { top: 50%; right: 10px; transform: translateY(-50%); }
-  .number4  { bottom: 28px; right: 20px; }
-  .number5  { bottom: 10px; right: 50px; }
-  .number6  { bottom: 10px; left: 50%; transform: translateX(-50%); }
-  .number7  { bottom: 10px; left: 50px; }
-  .number8  { bottom: 28px; left: 20px; }
-  .number9  { top: 50%; left: 10px; transform: translateY(-50%); }
-  .number10 { top: 28px; left: 20px; }
-  .number11 { top: 10px; left: 50px; }
-  .number12 { top: 5px; left: 50%; transform: translateX(-50%); }
   .hand {
     position: absolute;
-    bottom: 50%;
-    left: 50%;
-    background: var(--accent);
-    border-radius: 2px;
+    background: var(--primary-color);
+    top: 50%; left: 50%;
     transform-origin: bottom center;
-    transition: transform 0.1s linear;
+    transform: translateX(-50%) translateY(-100%);
+    border-radius: 6px;
+    transition: background 0.3s;
   }
-  .hour {
-    width: 6px;
-    height: 40px;
+  .hand.hour {
+    width: 8px;
+    height: 50px;
+    z-index: 6;
   }
-  .minute {
-    width: 4px;
-    height: 60px;
-  }
-  .second {
-    width: 2px;
+  .hand.minute {
+    width: 5px;
     height: 70px;
-    background: red;
+    z-index: 7;
   }
-  .controls {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: auto;
-    flex-wrap: wrap;
-    justify-content: center;
+  .hand.second {
+    width: 2px;
+    height: 85px;
+    background: var(--secondary-color);
+    z-index: 8;
   }
-  button {
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    padding: 0.4rem 1rem;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.3s;
-  }
-  button:hover {
-    background: #005bb5;
-  }
-  button.remove-clock {
-    background: #e74c3c;
-  }
-  button.remove-clock:hover {
-    background: #c0392b;
-  }
-  .toggle-mode {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    background: var(--accent);
-    border: none;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    user-select: none;
-    box-shadow: 0 4px 8px var(--shadow-light);
-    z-index: 1000;
-    transition: background 0.3s;
-  }
-  body.dark .toggle-mode {
-    box-shadow: 0 4px 8px var(--shadow-dark);
-  }
-  .toggle-mode:hover {
-    background: #005bb5;
-  }
-  footer {
-    padding: 1rem;
+
+  /* Digital Clock */
+  .digital-clock {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-weight: 700;
+    font-size: 2.3rem;
+    color: var(--primary-color);
+    font-family: 'Courier New', Courier, monospace;
+    min-width: 180px;
     text-align: center;
+    margin: 0 auto 15px auto;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark .digital-clock {
+    background: #121212;
+    color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.7);
+  }
+
+  .info {
+    font-size: 1rem;
+    color: #555;
+    text-align: center;
+    margin-top: 8px;
+    user-select: text;
+  }
+  body.dark .info {
+    color: #bbb;
+  }
+
+  .btn-switch {
+    cursor: pointer;
     font-size: 0.9rem;
-    color: var(--accent);
+    background: var(--primary-color);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .btn-switch:hover {
+    background: #2f6dc7;
+  }
+
+  .btn-remove {
+    cursor: pointer;
+    background: #e94e77;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 6px 12px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .btn-remove:hover {
+    background: #b43356;
+  }
+
+  footer {
+    position: fixed;
+    bottom: 10px;
+    right: 20px;
+    font-size: 0.9rem;
+    color: #888;
     user-select: none;
   }
-  .add-clock-form {
-    width: 280px;
-    margin: 0 auto 2rem;
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
+  body.dark footer {
+    color: #666;
   }
-  .add-clock-form input {
-    flex-grow: 1;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-  }
-  .add-clock-form button {
-    flex-shrink: 0;
-  }
+
 </style>
 </head>
 <body>
 
-<header>World Clock - LulssuLabs</header>
+<h1>World Clock - Multiple Timezones with DST Info</h1>
 
-<button aria-label="Toggle light/dark mode" id="toggleTheme" class="toggle-mode" title="Toggle Light/Dark Mode">🌓</button>
+<div id="controls">
+  <input id="addClockInput" list="timezone-list" placeholder="Add timezone e.g. Europe/Berlin" />
+  <datalist id="timezone-list">
+    <!-- A short list of common timezones, user can type more -->
+    <option value="America/New_York"></option>
+    <option value="Europe/London"></option>
+    <option value="Asia/Tokyo"></option>
+    <option value="Europe/Berlin"></option>
+    <option value="Australia/Sydney"></option>
+    <option value="America/Los_Angeles"></option>
+    <option value="Asia/Dubai"></option>
+  </datalist>
+  <button id="addClockBtn">Add Clock</button>
+</div>
 
-<main id="clockContainer">
-  <!-- Clock cards will be inserted here -->
-</main>
+<div id="clocks">
+  <!-- Clocks will be inserted here -->
+</div>
 
-<form id="addClockForm" class="add-clock-form" aria-label="Add new clock by city name">
-  <input type="text" id="newCity" placeholder="Add city (e.g. Paris)" aria-label="City name" required />
-  <button type="submit" aria-label="Add clock">Add</button>
-</form>
+<button id="toggleThemeBtn" title="Toggle Light/Dark Mode">🌙</button>
 
-<footer>© 2025 LulssuLabs</footer>
+<footer>Powered by LulssuLabs</footer>
 
 <script>
-(() => {
-  const defaultCities = [
-    { name: 'New York', tz: 'America/New_York' },
-    { name: 'London', tz: 'Europe/London' },
-    { name: 'Tokyo', tz: 'Asia/Tokyo' }
-  ];
+  const clocksContainer = document.getElementById('clocks');
+  const addClockBtn = document.getElementById('addClockBtn');
+  const addClockInput = document.getElementById('addClockInput');
+  const toggleThemeBtn = document.getElementById('toggleThemeBtn');
 
-  const clockContainer = document.getElementById('clockContainer');
-  const addClockForm = document.getElementById('addClockForm');
-  const newCityInput = document.getElementById('newCity');
-  const toggleThemeBtn = document.getElementById('toggleTheme');
+  // Default clocks
+  const defaultTimezones = ['America/New_York', 'Europe/London', 'Asia/Tokyo'];
 
-  // State of clocks: {id, name, tz, mode: 'digital'|'analog'}
+  // Store clocks data here
   let clocks = [];
 
-  // Save and load clocks from localStorage
-  function saveClocks() {
-    localStorage.setItem('worldClocks', JSON.stringify(clocks));
+  // Utility: Format time number with leading zero
+  function pad(n) {
+    return n.toString().padStart(2, '0');
   }
-  function loadClocks() {
-    const saved = localStorage.getItem('worldClocks');
-    if (saved) {
-      clocks = JSON.parse(saved);
-    } else {
-      clocks = defaultCities.map(c => ({ ...c, mode: 'digital', id: crypto.randomUUID() }));
+
+  // Detect DST for a given date & timezone using Intl API (works on modern browsers)
+  function isDST(date, tz) {
+    const jan = new Date(date.getFullYear(), 0, 1);
+    const jul = new Date(date.getFullYear(), 6, 1);
+    const stdOffset = Math.max(
+      jan.toLocaleString('en-US', {timeZone: tz, timeZoneName: 'short'}).split(' ')[2].includes('GMT') ? 0 : 0,
+      jul.toLocaleString('en-US', {timeZone: tz, timeZoneName: 'short'}).split(' ')[2].includes('GMT') ? 0 : 0
+    );
+
+    const tzOffset = -date.getTimezoneOffset();
+
+    // Because JS has no direct DST detection, we approximate:
+    // Compare timezone offsets on jan 1 and july 1 to current offset.
+    // Intl API can't give exact offset numbers easily; so we'll do a trick:
+    // We'll compare offset minutes between jan, jul, and current dates in that timezone:
+
+    // Get offset minutes for a date in a timezone:
+    function getOffsetMinutes(d, tz) {
+      // Using Date.toLocaleString with timeZoneName: 'short' returns "GMT+X"
+      const str = d.toLocaleString('en-US', {timeZone: tz, timeZoneName: 'short'});
+      // Extract offset from string, e.g. "10/8/2021, 11:56:18 PM GMT+2"
+      const offsetMatch = str.match(/GMT([+-]\d+)/);
+      if (offsetMatch) return parseInt(offsetMatch[1]) * 60;
+      return 0;
     }
+
+    const stdOffsetJan = getOffsetMinutes(jan, tz);
+    const stdOffsetJul = getOffsetMinutes(jul, tz);
+    const currentOffset = getOffsetMinutes(date, tz);
+
+    const maxStd = Math.max(stdOffsetJan, stdOffsetJul);
+
+    // DST if current offset < max std offset (usually DST shifts clock forward, reducing offset)
+    return currentOffset < maxStd;
   }
 
-  // Light/Dark mode
-  function setTheme(dark) {
-    if (dark) {
-      document.body.classList.add('dark');
-      toggleThemeBtn.textContent = '☀️';
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.body.classList.remove('dark');
-      toggleThemeBtn.textContent = '🌓';
-      localStorage.setItem('theme', 'light');
-    }
-  }
-  // Load theme on start
-  const savedTheme = localStorage.getItem('theme');
-  setTheme(savedTheme === 'dark');
-
-  toggleThemeBtn.addEventListener('click', () => {
-    setTheme(!document.body.classList.contains('dark'));
-  });
-
-  // Clock rendering
-  function createClockCard(clock) {
-    const card = document.createElement('section');
+  // Create clock card element
+  function createClockCard(tz) {
+    const card = document.createElement('div');
     card.className = 'clock-card';
     card.setAttribute('draggable', 'true');
-    card.dataset.id = clock.id;
 
-    // City name
-    const cityName = document.createElement('h2');
-    cityName.className = 'city-name';
-    cityName.textContent = clock.name;
-    card.appendChild(cityName);
+    // Header with timezone short name and remove button
+    const header = document.createElement('div');
+    header.className = 'clock-header';
 
-    // Clock display container
-    const display = document.createElement('div');
-    display.className = 'clock-display';
-    card.appendChild(display);
-
-    // Digital clock element
-    const digital = document.createElement('div');
-    digital.className = 'digital-clock';
-    display.appendChild(digital);
-
-    // Analog clock element
-    const analog = document.createElement('div');
-    analog.className = 'analog-clock';
-    // Add numbers 1-12 around clock
-    for(let i=1; i<=12; i++) {
-      const number = document.createElement('div');
-      number.className = `number number${i}`;
-      number.textContent = i;
-      analog.appendChild(number);
-    }
-    // Add hands
-    ['hour', 'minute', 'second'].forEach(handName => {
-      const hand = document.createElement('div');
-      hand.className = `hand ${handName}`;
-      analog.appendChild(hand);
-    });
-    display.appendChild(analog);
-
-    // Controls: toggle analog/digital and remove
-    const controls = document.createElement('div');
-    controls.className = 'controls';
-
-    const toggleBtn = document.createElement('button');
-    toggleBtn.textContent = clock.mode === 'digital' ? 'Show Analog' : 'Show Digital';
-    toggleBtn.setAttribute('aria-label', 'Toggle clock display mode');
-    toggleBtn.addEventListener('click', () => {
-      clock.mode = clock.mode === 'digital' ? 'analog' : 'digital';
-      saveClocks();
-      renderClocks();
-    });
-    controls.appendChild(toggleBtn);
+    const zoneName = document.createElement('div');
+    zoneName.textContent = tz.replace('_', ' ');
 
     const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn-remove';
     removeBtn.textContent = 'Remove';
-    removeBtn.className = 'remove-clock';
-    removeBtn.setAttribute('aria-label', `Remove clock for ${clock.name}`);
+    removeBtn.title = 'Remove this clock';
+
     removeBtn.addEventListener('click', () => {
-      clocks = clocks.filter(c => c.id !== clock.id);
-      saveClocks();
-      renderClocks();
+      clocks = clocks.filter(c => c !== card);
+      card.remove();
     });
-    controls.appendChild(removeBtn);
 
-    card.appendChild(controls);
+    header.appendChild(zoneName);
+    header.appendChild(removeBtn);
+    card.appendChild(header);
 
-    // Show only selected mode
-    digital.style.display = clock.mode === 'digital' ? 'block' : 'none';
-    analog.style.display = clock.mode === 'analog' ? 'block' : 'none';
+    // Clock display container (analog or digital)
+    const clockDisplay = document.createElement('div');
+    clockDisplay.style.marginBottom = '10px';
 
-    // Drag and Drop handlers
-    card.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', clock.id);
-      card.style.opacity = '0.5';
+    // Analog clock
+    const analogClock = document.createElement('div');
+    analogClock.className = 'analog-clock';
+
+    const hourHand = document.createElement('div');
+    hourHand.className = 'hand hour';
+    const minuteHand = document.createElement('div');
+    minuteHand.className = 'hand minute';
+    const secondHand = document.createElement('div');
+    secondHand.className = 'hand second';
+
+    const centerDot = document.createElement('div');
+    centerDot.className = 'center-dot';
+
+    analogClock.appendChild(hourHand);
+    analogClock.appendChild(minuteHand);
+    analogClock.appendChild(secondHand);
+    analogClock.appendChild(centerDot);
+
+    // Digital clock
+    const digitalClock = document.createElement('div');
+    digitalClock.className = 'digital-clock';
+    digitalClock.textContent = '--:--:--';
+
+    // Initially show analog clock, hide digital
+    digitalClock.style.display = 'none';
+
+    clockDisplay.appendChild(analogClock);
+    clockDisplay.appendChild(digitalClock);
+
+    card.appendChild(clockDisplay);
+
+    // Info (timezone full name, UTC offset, DST status)
+    const info = document.createElement('div');
+    info.className = 'info';
+    info.textContent = 'Loading...';
+    card.appendChild(info);
+
+    // Switch display button
+    const switchBtn = document.createElement('button');
+    switchBtn.className = 'btn-switch';
+    switchBtn.textContent = 'Switch to Digital';
+    card.appendChild(switchBtn);
+
+    // Switch logic
+    switchBtn.addEventListener('click', () => {
+      if (analogClock.style.display === 'none') {
+        analogClock.style.display = 'block';
+        digitalClock.style.display = 'none';
+        switchBtn.textContent = 'Switch to Digital';
+      } else {
+        analogClock.style.display = 'none';
+        digitalClock.style.display = 'block';
+        switchBtn.textContent = 'Switch to Analog';
+      }
+    });
+
+    // Store all parts for update
+    card.clockParts = {hourHand, minuteHand, secondHand, digitalClock, info, tz};
+
+    // Drag and drop support
+    card.addEventListener('dragstart', (e) => {
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', '');
+      dragged = card;
     });
     card.addEventListener('dragend', () => {
-      card.style.opacity = '';
+      card.classList.remove('dragging');
+      dragged = null;
     });
 
     return card;
   }
 
-  // Update clock times
-  function updateTimes() {
-    clocks.forEach(clock => {
-      const card = clockContainer.querySelector(`[data-id="${clock.id}"]`);
-      if (!card) return;
+  // Update all clocks every second
+  function updateAllClocks() {
+    clocks.forEach(card => {
+      const {hourHand, minuteHand, secondHand, digitalClock, info, tz} = card.clockParts;
 
+      // Get current time in timezone tz
       const now = new Date();
-      const options = { timeZone: clock.tz, hour12: false };
-      const timeStr = now.toLocaleTimeString('en-GB', options); // 24h format HH:mm:ss
 
-      const digital = card.querySelector('.digital-clock');
-      if (digital) digital.textContent = timeStr;
+      // Convert current time to target timezone using Intl API:
+      // We get time parts by formatting date to locale string then parse time from it.
+      // This is a trick due to no direct timezone conversions in plain JS.
 
-      const analog = card.querySelector('.analog-clock');
-      if (analog) {
-        const hands = {
-          hour: analog.querySelector('.hand.hour'),
-          minute: analog.querySelector('.hand.minute'),
-          second: analog.querySelector('.hand.second')
-        };
+      const options = {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit', timeZone: tz};
+      const timeParts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
 
-        // Get time parts in that timezone
-        const tzTime = new Date(now.toLocaleString('en-US', { timeZone: clock.tz }));
-        let h = tzTime.getHours() % 12;
-        let m = tzTime.getMinutes();
-        let s = tzTime.getSeconds();
-
-        // Calculate degrees
-        const hourDeg = (h + m / 60) * 30; // 360/12 = 30
-        const minDeg = (m + s / 60) * 6;   // 360/60 = 6
-        const secDeg = s * 6;
-
-        if (hands.hour) hands.hour.style.transform = `rotate(${hourDeg}deg)`;
-        if (hands.minute) hands.minute.style.transform = `rotate(${minDeg}deg)`;
-        if (hands.second) hands.second.style.transform = `rotate(${secDeg}deg)`;
+      let hour = 0, minute = 0, second = 0;
+      for (const part of timeParts) {
+        if (part.type === 'hour') hour = Number(part.value);
+        if (part.type === 'minute') minute = Number(part.value);
+        if (part.type === 'second') second = Number(part.value);
       }
-    });
-  }
 
-  // Render all clocks
-  function renderClocks() {
-    clockContainer.innerHTML = '';
-    clocks.forEach(clock => {
-      const card = createClockCard(clock);
-      clockContainer.appendChild(card);
-    });
-    updateTimes();
-  }
+      // Update analog clock hands if visible
+      if (hourHand.parentElement.style.display !== 'none') {
+        const hourDegree = (hour % 12) * 30 + minute * 0.5;
+        const minuteDegree = minute * 6 + second * 0.1;
+        const secondDegree = second * 6;
 
-  // Add new clock by city
-  addClockForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const city = newCityInput.value.trim();
-    if (!city) return;
-
-    // Attempt to get time zone from Intl API
-    // Unfortunately, no direct way to get tz by city name,
-    // so we fallback to manual mapping or a basic guess:
-    // For demonstration: allow adding only well-known IANA tz strings or cities in the defaultCities
-    // Or treat input as a city and try to find matching tz from Intl.supportedValuesOf('timeZone')
-
-    // Validate timezone or fallback
-    const possibleTimeZones = Intl.supportedValuesOf('timeZone');
-    const matchedTZ = possibleTimeZones.find(tz => tz.toLowerCase().includes(city.toLowerCase()));
-
-    if (!matchedTZ) {
-      alert('City/timezone not found. Try a major city or correct timezone string like "Europe/Paris".');
-      return;
-    }
-
-    clocks.push({ id: crypto.randomUUID(), name: city, tz: matchedTZ, mode: 'digital' });
-    saveClocks();
-    renderClocks();
-    addClockForm.reset();
-  });
-
-  // Drag and drop sorting
-  let draggedId = null;
-  clockContainer.addEventListener('dragover', e => {
-    e.preventDefault();
-    const afterElement = getDragAfterElement(clockContainer, e.clientX, e.clientY);
-    const draggingEl = clockContainer.querySelector(`[data-id="${draggedId}"]`);
-    if (!draggingEl) return;
-
-    if (afterElement == null) {
-      clockContainer.appendChild(draggingEl);
-    } else {
-      clockContainer.insertBefore(draggingEl, afterElement);
-    }
-  });
-  clockContainer.addEventListener('dragstart', e => {
-    draggedId = e.target.dataset.id;
-  });
-  clockContainer.addEventListener('drop', e => {
-    e.preventDefault();
-    // Update clocks array order according to DOM
-    const newOrder = Array.from(clockContainer.children).map(c => c.dataset.id);
-    clocks.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
-    saveClocks();
-    draggedId = null;
-  });
-
-  function getDragAfterElement(container, x, y) {
-    const draggableElements = [...container.querySelectorAll('.clock-card:not(.dragging)')];
-
-    return draggableElements.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
+        hourHand.style.transform = `translateX(-50%) translateY(-100%) rotate(${hourDegree}deg)`;
+        minuteHand.style.transform = `translateX(-50%) translateY(-100%) rotate(${minuteDegree}deg)`;
+        secondHand.style.transform = `translateX(-50%) translateY(-100%) rotate(${secondDegree}deg)`;
       }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-  }
 
-  // Initialize
-  loadClocks();
-  renderClocks();
-  setInterval(updateTimes, 1000);
-})();
-</script>
+      // Update digital clock if visible
+      if (digitalClock.style.display !== 'none') {
+        digitalClock.textContent = `${pad(hour)}:${pad(minute)}:${pad(second)}`;
+      }
 
-</body>
-</html>
+      // Update timezone info with DST detection
+      const tzNamePretty = tz.replace('_', ' ');
+      const offsetMinutes = -now.toLocaleString('en-US', {timeZone: tz, timeZoneName: 'short'}).split(' ')[2].match(/[+-]\d{1,2}/)?.[0] ? new Date().getTimezoneOffset() : 0;
+      const dstActive = isDST(now
