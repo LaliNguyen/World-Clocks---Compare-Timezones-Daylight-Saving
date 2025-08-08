@@ -444,4 +444,77 @@ const calcCity2 = document.getElementById('calc-city2');
 const calcDate = document.getElementById('calc-date');
 const calcTime = document.getElementById('calc-time');
 const calcBtn = document.getElementById('calc-btn');
-const
+const calcResult = document.getElementById('calc-result');
+
+function populateCalcSelects(){
+  calcCity1.innerHTML = '';
+  calcCity2.innerHTML = '';
+  for(const city of cities){
+    const option1 = document.createElement('option');
+    option1.value = city.id;
+    option1.textContent = city.name;
+    calcCity1.appendChild(option1);
+
+    const option2 = document.createElement('option');
+    option2.value = city.id;
+    option2.textContent = city.name;
+    calcCity2.appendChild(option2);
+  }
+  calcCity1.value = 'america_new_york';
+  calcCity2.value = 'europe_london';
+
+  // Default date: today, time: 12:00
+  const today = new Date().toISOString().slice(0,10);
+  calcDate.value = today;
+  calcTime.value = '12:00';
+}
+
+function calculateTimeDifference(){
+  const city1 = cities.find(c => c.id === calcCity1.value);
+  const city2 = cities.find(c => c.id === calcCity2.value);
+  if(!city1 || !city2){
+    calcResult.textContent = 'Please select both cities.';
+    return;
+  }
+  if(!calcDate.value || !calcTime.value){
+    calcResult.textContent = 'Please select date and time.';
+    return;
+  }
+
+  // Build Date object from input date & time in city1's timezone
+  const localStr = `${calcDate.value}T${calcTime.value}:00`;
+  // We create date in UTC first, then adjust it to city1 tz by subtracting offset
+  let localDate = new Date(localStr + 'Z');
+
+  // Get offset in hours for city1 tz at that date
+  let offsetCity1 = getOffsetHours(localDate, city1.tz);
+  // Convert localDate to UTC by subtracting offsetCity1
+  let utcDate = new Date(localDate.getTime() - offsetCity1 * 3600000);
+
+  // Now find local date in city2 at same UTC time
+  let city2Date = getTimeInTimeZone(utcDate, city2.tz);
+
+  // Calculate difference in hours
+  let diffMs = city2Date.getTime() - getTimeInTimeZone(localDate, city1.tz).getTime();
+  let diffH = diffMs / 3600000;
+
+  // Format results
+  const fmtDateCity1 = formatDateTime(localDate, city1.tz);
+  const fmtDateCity2 = formatDateTime(city2Date, city2.tz);
+
+  calcResult.innerHTML = `
+    <p><strong>${city1.name}:</strong> ${fmtDateCity1}</p>
+    <p><strong>${city2.name}:</strong> ${fmtDateCity2}</p>
+    <p>Time difference: <strong>${diffH.toFixed(2)} hours</strong></p>
+  `;
+}
+
+// Init
+addDefaultClocks();
+populateCalcSelects();
+updateAllClocks();
+setInterval(updateAllClocks, 1000);
+calcBtn.addEventListener('click', calculateTimeDifference);
+</script>
+</body>
+</html>
