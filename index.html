@@ -1,88 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Time – Live Clocks for Every Country</title>
-    <meta name="description" content="Check live time from countries around the world. Simple, fast, and always up to date.">
-    <meta name="keywords" content="world clock, live time, global time zones, international time, local time">
-    <meta name="author" content="Lulssu Labs">
-    <meta name="robots" content="index, follow">
-
-    <!-- Open Graph for social sharing -->
-    <meta property="og:title" content="World Time – Live Clocks for Every Country">
-    <meta property="og:description" content="Check live time from countries around the world. Simple, fast, and always up to date.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://lalinguyen.github.io/lulssulabs/">
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            color: #222;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            margin: 20px 0 10px;
-            color: #0078D7;
-        }
-        p {
-            margin: 0 0 20px;
-            font-size: 1.1em;
-            color: #555;
-        }
-        .clock-list {
-            display: inline-block;
-            text-align: left;
-            font-size: 1.3em;
-            line-height: 2em;
-        }
-        .city {
-            font-weight: bold;
-            color: #333;
-        }
-        .time {
-            color: #0078D7;
-            margin-left: 10px;
-        }
-        footer {
-            font-size: 0.9em;
-            color: #888;
-            margin-top: 30px;
-            padding-bottom: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Clock & Time Zones – LulssuLabs</title>
+  <meta name="description" content="World Clock & Time Zones – Add multiple countries and cities, choose analog or digital clocks, and switch between light and dark mode. Powered by LulssuLabs.">
+  <meta name="keywords" content="world clock, time zones, current time, digital clock, analog clock, LulssuLabs">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg, #f4f4f4);
+      color: var(--text, #333);
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      padding: 10px;
+      text-align: center;
+      background-color: var(--header-bg, #4CAF50);
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    input, select, button {
+      padding: 5px;
+    }
+    .clock-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .clock-card {
+      background: var(--card-bg, white);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 200px;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark-mode {
+      --bg: #1e1e1e;
+      --text: #ddd;
+      --card-bg: #333;
+      --header-bg: #222;
+    }
+    .toggle-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      background: var(--card-bg, white);
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: gray;
+    }
+  </style>
 </head>
 <body>
-    <h1>🌍 World Time</h1>
-    <p>Live local time in major cities around the world.</p>
 
-    <div class="clock-list">
-        <div><span class="city">New York, USA:</span> <span class="time" id="ny-time"></span></div>
-        <div><span class="city">London, UK:</span> <span class="time" id="london-time"></span></div>
-        <div><span class="city">Tokyo, Japan:</span> <span class="time" id="tokyo-time"></span></div>
-        <div><span class="city">Sydney, Australia:</span> <span class="time" id="sydney-time"></span></div>
-    </div>
+<header>
+  <h1>🌍 World Clock – LulssuLabs</h1>
+  <p>Check the current time anywhere in the world</p>
+</header>
 
-    <footer>© 2025 Lulssu Labs – All rights reserved</footer>
+<div class="controls">
+  <input type="text" id="cityInput" placeholder="Enter city (e.g., Tokyo)">
+  <select id="styleSelect">
+    <option value="digital">Digital</option>
+    <option value="analog">Analog</option>
+  </select>
+  <button onclick="addClock()">Add Clock</button>
+</div>
 
-    <script>
-        function updateClock(id, timeZone) {
-            const options = { timeZone: timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            document.getElementById(id).textContent = new Intl.DateTimeFormat([], options).format(new Date());
+<div class="clock-container" id="clocks"></div>
+
+<button class="toggle-btn" onclick="toggleDarkMode()">🌙</button>
+
+<footer>
+  Powered by LulssuLabs
+</footer>
+
+<script>
+  const clocksContainer = document.getElementById('clocks');
+  let isDark = false;
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    isDark = !isDark;
+  }
+
+  function addClock() {
+    const city = document.getElementById('cityInput').value.trim();
+    const style = document.getElementById('styleSelect').value;
+    if (!city) return alert('Please enter a city.');
+
+    const clockCard = document.createElement('div');
+    clockCard.className = 'clock-card';
+    clockCard.innerHTML = `<h3>${city}</h3><div class="time-display">Loading...</div>`;
+    clocksContainer.appendChild(clockCard);
+
+    updateClock(city, clockCard.querySelector('.time-display'), style);
+    setInterval(() => updateClock(city, clockCard.querySelector('.time-display'), style), 1000);
+  }
+
+  function updateClock(city, displayElement, style) {
+    fetch(`https://worldtimeapi.org/api/timezone`)
+      .then(res => res.json())
+      .then(timezones => {
+        const match = timezones.find(tz => tz.toLowerCase().includes(city.toLowerCase()));
+        if (!match) {
+          displayElement.innerHTML = "City not found";
+          return;
         }
+        fetch(`https://worldtimeapi.org/api/timezone/${match}`)
+          .then(res => res.json())
+          .then(data => {
+            const time = new Date(data.datetime);
+            if (style === 'digital') {
+              displayElement.innerHTML = time.toLocaleTimeString();
+            } else {
+              displayElement.innerHTML = `<canvas width="100" height="100"></canvas>`;
+              drawAnalog(displayElement.querySelector('canvas'), time);
+            }
+          });
+      });
+  }
 
-        function updateAllClocks() {
-            updateClock('ny-time', 'America/New_York');
-            updateClock('london-time', 'Europe/London');
-            updateClock('tokyo-time', 'Asia/Tokyo');
-            updateClock('sydney-time', 'Australia/Sydney');
-        }
+  function drawAnalog(canvas, time) {
+    const ctx = canvas.getContext('2d');
+    const radius = canvas.height / 2;
+    ctx.translate(radius, radius);
+    ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.arc(0, 0, radius - 2, 0, 2 * Math.PI);
+    ctx.stroke();
 
-        setInterval(updateAllClocks, 1000);
-        updateAllClocks();
-    </script>
+    let hour = time.getHours();
+    let minute = time.getMinutes();
+    let second = time.getSeconds();
+    hour = hour % 12;
+    hour = (hour * Math.PI / 6) + (minute * Math.PI / (6 * 60));
+    drawHand(ctx, hour, radius * 0.5, 7);
+    minute = (minute * Math.PI / 30);
+    drawHand(ctx, minute, radius * 0.8, 5);
+    second = (second * Math.PI / 30);
+    drawHand(ctx, second, radius * 0.9, 2, 'red');
+
+    ctx.translate(-radius, -radius);
+  }
+
+  function drawHand(ctx, pos, length, width, color = 'black') {
+    ctx.beginPath();
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = color;
+    ctx.moveTo(0, 0);
+    ctx.rotate(pos);
+    ctx.lineTo(0, -length);
+    ctx.stroke();
+    ctx.rotate(-pos);
+  }
+</script>
+
 </body>
 </html>
