@@ -1,677 +1,305 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>World Clock – Analog & Digital Timezones, DST & Time Calculator</title>
-  <meta name="description" content="World Clock — clean analog and digital clocks for multiple cities, daylight saving information, and a time difference calculator. Supports multiple languages and auto dark/light theme." />
-  <meta name="keywords" content="world clock, timezones, daylight saving, analog clock, digital clock, time calculator, time converter, timezone converter" />
-  <link rel="canonical" href="https://lulssulabs.github.io/" />
-  <meta name="robots" content="index,follow" />
-
-  <!-- JSON-LD structured data (website + application) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "World Clock",
-    "url": "https://lulssulabs.github.io/",
-    "description": "Clean analog and digital world clocks with timezone, DST information and time difference calculator."
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="World Clock showing analog and digital times with timezone info, city selection, and time difference calculator." />
+<title>World Clock & Time Calculator</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: #f9f9f9;
+    color: #222;
+    margin: 0; padding: 1rem;
   }
-  </script>
-
-  <style>
-    :root{
-      --bg:#f6f8fb; --card:#fff; --muted:#6b7280; --accent:#0ea5a4; --accent-2:#ef4444;
-      --shadow: 0 8px 24px rgba(2,6,23,0.08);
-      --radius:14px;
-      --glass: rgba(255,255,255,0.6);
-      --text:#0f172a;
-    }
-    @media (prefers-color-scheme: dark){
-      :root{
-        --bg: #0b1220; --card:#0f1724; --muted:#94a3b8; --accent:#60a5fa; --accent-2:#fb7185;
-        --shadow: 0 8px 24px rgba(2,6,23,0.6);
-        --text:#e6eef8;
-      }
-    }
-
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Roboto,system-ui,-apple-system, "Helvetica Neue", Arial;}
-    header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;max-width:1200px;margin:0 auto;}
-    .brand{font-weight:800;font-size:1.1rem;letter-spacing:0.2px}
-    .subtitle{font-size:0.9rem;color:var(--muted);margin-top:3px}
-
-    main{max-width:1200px;margin:0 auto;padding:6px 18px 60px;display:flex;flex-direction:column;gap:18px}
-    .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between}
-    .left-controls{display:flex;gap:12px;align-items:center}
-    .lang-select,.theme-toggle{padding:8px 10px;border-radius:10px;border:none;background:var(--card);box-shadow:var(--shadow);cursor:pointer}
-    .search-add{display:flex;gap:8px;align-items:center;background:transparent}
-    .city-select{min-width:220px;padding:10px;border-radius:10px;border:1px solid #d1d5db;background:var(--card)}
-    .add-btn{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:white;cursor:pointer}
-
-    .clocks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:8px}
-    .clock-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;align-items:center;position:relative}
-    .clock-card .city-name{font-weight:700;font-size:1rem;margin-bottom:4px;text-align:center}
-    .clock-card .tz-info{font-size:0.85rem;color:var(--muted);margin-bottom:10px;text-align:center}
-
-    /* analog clock container */
-    .analog-wrap{position:relative;width:210px;height:210px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-    .analog-face{width:190px;height:190px;border-radius:50%;position:relative;display:block;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.98));box-shadow:inset 0 6px 18px rgba(2,6,23,0.03)}
-    .clock-border{position:absolute;width:210px;height:210px;border-radius:50%;border:8px solid rgba(2,6,23,0.06);box-sizing:border-box}
-    .center-dot{position:absolute;width:12px;height:12px;background:var(--accent);border-radius:50%;z-index:30;left:50%;top:50%;transform:translate(-50%,-50%)}
-
-    /* Hands - placed inside container via transforms */
-    .hand{position:absolute;left:50%;top:50%;transform-origin:50% 100%;transform:translate(-50%, -100%) rotate(0deg);border-radius:3px}
-    .hour-hand{width:6px;height:58px;background:var(--text);z-index:20}
-    .minute-hand{width:4px;height:78px;background:var(--text);z-index:21}
-    .second-hand{width:2px;height:88px;background:var(--accent-2);z-index:22}
-
-    /* numbers placed via JS with absolute coordinates inside face */
-    .clock-number{position:absolute;color:var(--text);font-weight:700;user-select:none;text-align:center}
-
-    .digital{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Courier New', monospace;font-weight:700;font-size:1.3rem;margin-bottom:6px}
-    .date-line{font-size:0.86rem;color:var(--muted)}
-    .controls-row{display:flex;gap:8px;margin-top:10px;align-items:center}
-    .remove-btn{position:absolute;right:12px;top:12px;background:transparent;border:1px solid rgba(0,0,0,0.06);padding:6px;border-radius:8px;cursor:pointer}
-
-    /* calculator */
-    .calculator{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
-    .calc-row{display:flex;gap:8px;flex-wrap:wrap}
-    input,select{padding:10px;border-radius:8px;border:1px solid #d1d5db;background:var(--card);min-width:150px}
-    .calc-btn{background:var(--accent);color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-    pre#result{background:linear-gradient(90deg, rgba(14,165,164,0.04), rgba(239,68,68,0.02));padding:12px;border-radius:8px;min-height:70px;color:var(--text);white-space:pre-wrap}
-
-    /* small screens */
-    @media (max-width:560px){
-      .analog-wrap{width:170px;height:170px}.analog-face{width:150px;height:150px}
-      .hand.hour-hand{height:48px}.minute-hand{height:62px}.second-hand{height:68px}
-      .city-select{min-width:140px}
-    }
-  </style>
+  h1 {
+    text-align: center;
+    color: #007acc;
+  }
+  .clocks-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .clock {
+    background: white;
+    border: 3px solid #007acc;
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 240px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .analog-face {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 1rem;
+    border: 6px solid #007acc;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .analog-number {
+    position: absolute;
+    font-weight: 600;
+    color: #007acc;
+    user-select: none;
+    font-size: 1.3rem;
+    transform-origin: center center;
+  }
+  .digital-time {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.3rem;
+    font-family: monospace;
+  }
+  .tz-info {
+    font-size: 0.9rem;
+    color: #555;
+  }
+  select, input[type=date], input[type=time] {
+    font-size: 1rem;
+    padding: 0.4rem;
+    margin: 0.5rem 0;
+    width: 100%;
+    max-width: 280px;
+  }
+  .calculator {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border: 2px solid #007acc;
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+  label {
+    font-weight: 600;
+    display: block;
+    margin-top: 1rem;
+  }
+  button {
+    margin-top: 1rem;
+    background: #007acc;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 0.5rem;
+  }
+  button:hover {
+    background: #005fa3;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div>
-      <div class="brand">LulssuLabs — World Clock</div>
-      <div class="subtitle">Analog + Digital · Timezones · DST · Multilingual · Calculator</div>
-    </div>
 
-    <div style="display:flex;align-items:center;gap:8px">
-      <select id="lang" class="lang-select" title="Language">
-        <option value="en">EN</option>
-        <option value="es">ES</option>
-        <option value="fr">FR</option>
-        <option value="ja">日本語</option>
-      </select>
-      <button id="themeToggle" class="theme-toggle" title="Toggle theme">Theme</button>
-    </div>
-  </header>
+<h1>World Clock & Time Calculator</h1>
 
-  <main>
-    <div class="topbar">
-      <div class="left-controls">
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="cityAddSelect" class="city-select" aria-label="Add city"></select>
-          <button id="addCityBtn" class="add-btn">Add</button>
-        </div>
-      </div>
-      <div style="text-align:right;font-size:0.9rem;color:var(--muted)">Powered by LulssuLabs</div>
-    </div>
+<div class="clocks-container" id="clocksContainer">
+  <!-- Default clocks inserted by JS -->
+</div>
 
-    <section class="clocks-grid" id="clocksGrid" aria-live="polite">
-      <!-- Clock cards inserted here -->
-    </section>
+<div class="calculator" aria-label="Time difference calculator">
+  <h2>Calculate Time Difference</h2>
+  <label for="calcCityA">City A:</label>
+  <select id="calcCityA"></select>
 
-    <section class="calculator">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3 style="margin:0">Time Difference Calculator</h3>
-        <small style="color:var(--muted)">Pick date/time in first city</small>
-      </div>
+  <label for="calcCityB">City B:</label>
+  <select id="calcCityB"></select>
 
-      <div class="calc-row">
-        <select id="calcCityA"></select>
-        <select id="calcCityB"></select>
-      </div>
-      <div class="calc-row">
-        <input type="date" id="calcDate" />
-        <input type="time" id="calcTime" step="60" />
-      </div>
-      <div style="display:flex;gap:10px">
-        <button id="calcBtn" class="calc-btn">Calculate</button>
-        <button id="swapBtn" class="calc-btn" style="background:#ef4444">Swap</button>
-      </div>
-      <pre id="result"></pre>
-    </section>
+  <label for="calcDate">Date:</label>
+  <input type="date" id="calcDate" />
 
-  </main>
+  <label for="calcTime">Time:</label>
+  <input type="time" id="calcTime" />
+
+  <button id="calcButton">Calculate Difference</button>
+
+  <p id="calcResult" aria-live="polite"></p>
+</div>
 
 <script>
-/* ----------------------------
-   Data: cities list (popular + many)
-   You can extend this list or replace with a larger dataset
-   Each entry: {id, name, tz}
-   ---------------------------- */
-const cities = [
-  {id:'local_auto', name:'Local (Your Device)', tz: Intl.DateTimeFormat().resolvedOptions().timeZone},
-  {id:'america_new_york', name:'New York, USA', tz:'America/New_York'},
-  {id:'america_chicago', name:'Chicago, USA', tz:'America/Chicago'},
-  {id:'america_denver', name:'Denver, USA', tz:'America/Denver'},
-  {id:'america_los_angeles', name:'Los Angeles, USA', tz:'America/Los_Angeles'},
-  {id:'america_toronto', name:'Toronto, Canada', tz:'America/Toronto'},
-  {id:'america_mexico', name:'Mexico City, Mexico', tz:'America/Mexico_City'},
-  {id:'america_sao_paulo', name:'São Paulo, Brazil', tz:'America/Sao_Paulo'},
-  {id:'europe_london', name:'London, UK', tz:'Europe/London'},
-  {id:'europe_edinburgh', name:'Edinburgh, UK', tz:'Europe/London'},
-  {id:'europe_paris', name:'Paris, France', tz:'Europe/Paris'},
-  {id:'europe_berlin', name:'Berlin, Germany', tz:'Europe/Berlin'},
-  {id:'europe_madrid', name:'Madrid, Spain', tz:'Europe/Madrid'},
-  {id:'europe_rome', name:'Rome, Italy', tz:'Europe/Rome'},
-  {id:'europe_moscow', name:'Moscow, Russia', tz:'Europe/Moscow'},
-  {id:'africa_cairo', name:'Cairo, Egypt', tz:'Africa/Cairo'},
-  {id:'africa_johannesburg', name:'Johannesburg, South Africa', tz:'Africa/Johannesburg'},
-  {id:'asia_istanbul', name:'Istanbul, Turkey', tz:'Europe/Istanbul'},
-  {id:'asia_tel_aviv', name:'Tel Aviv, Israel', tz:'Asia/Jerusalem'},
-  {id:'asia_dubai', name:'Dubai, UAE', tz:'Asia/Dubai'},
-  {id:'asia_mumbai', name:'Mumbai, India', tz:'Asia/Kolkata'},
-  {id:'asia_dhaka', name:'Dhaka, Bangladesh', tz:'Asia/Dhaka'},
-  {id:'asia_bangkok', name:'Bangkok, Thailand', tz:'Asia/Bangkok'},
-  {id:'asia_hong_kong', name:'Hong Kong, China', tz:'Asia/Hong_Kong'},
-  {id:'asia_shanghai', name:'Shanghai, China', tz:'Asia/Shanghai'},
-  {id:'asia_singapore', name:'Singapore', tz:'Asia/Singapore'},
-  {id:'asia_seoul', name:'Seoul, South Korea', tz:'Asia/Seoul'},
-  {id:'asia_tokyo', name:'Tokyo, Japan', tz:'Asia/Tokyo'},
-  {id:'australia_sydney', name:'Sydney, Australia', tz:'Australia/Sydney'},
-  {id:'australia_melbourne', name:'Melbourne, Australia', tz:'Australia/Melbourne'},
-  {id:'pacific_auckland', name:'Auckland, New Zealand', tz:'Pacific/Auckland'},
-  // more major cities
-  {id:'europe_amsterdam', name:'Amsterdam, Netherlands', tz:'Europe/Amsterdam'},
-  {id:'europe_brussels', name:'Brussels, Belgium', tz:'Europe/Brussels'},
-  {id:'europe_vienna', name:'Vienna, Austria', tz:'Europe/Vienna'},
-  {id:'europe_zurich', name:'Zurich, Switzerland', tz:'Europe/Zurich'},
-  {id:'america_miami', name:'Miami, USA', tz:'America/New_York'},
-  {id:'america_bogota', name:'Bogotá, Colombia', tz:'America/Bogota'},
-  {id:'america_lima', name:'Lima, Peru', tz:'America/Lima'},
-  {id:'america_santiago', name:'Santiago, Chile', tz:'America/Santiago'},
-  {id:'asia_kuala_lumpur', name:'Kuala Lumpur, Malaysia', tz:'Asia/Kuala_Lumpur'},
-  {id:'asia_manila', name:'Manila, Philippines', tz:'Asia/Manila'},
-  {id:'europe_warsaw', name:'Warsaw, Poland', tz:'Europe/Warsaw'},
-  {id:'europe_prague', name:'Prague, Czech Republic', tz:'Europe/Prague'},
-  {id:'europe_budapest', name:'Budapest, Hungary', tz:'Europe/Budapest'},
-  {id:'europe_dublin', name:'Dublin, Ireland', tz:'Europe/Dublin'},
-  {id:'america_vancouver', name:'Vancouver, Canada', tz:'America/Vancouver'},
-  {id:'america_phoenix', name:'Phoenix, USA', tz:'America/Phoenix'},
-  {id:'america_new_orleans', name:'New Orleans, USA', tz:'America/Chicago'},
-  {id:'asia_jakarta', name:'Jakarta, Indonesia', tz:'Asia/Jakarta'}
-];
+  const cities = [
+    { id: 'america_new_york', name: 'New York', tz: 'America/New_York' },
+    { id: 'europe_london', name: 'London', tz: 'Europe/London' },
+    { id: 'asia_tokyo', name: 'Tokyo', tz: 'Asia/Tokyo' },
+    // add more cities here...
+  ];
 
-const LANGSTR = {
-  en: {
-    add: 'Add',
-    calculate: 'Calculate',
-    swap: 'Swap',
-    selectCity: 'Select a city',
-    timeCalcTitle: 'Time Difference Calculator',
-    date: 'Date',
-    time: 'Time',
-    timezone: 'Timezone',
-    dst: 'DST',
-    remove: 'Remove',
-    defaultCities: ['Local', 'London', 'Tokyo']
-  },
-  es: {
-    add: 'Añadir',
-    calculate: 'Calcular',
-    swap: 'Intercambiar',
-    selectCity: 'Selecciona una ciudad',
-    timeCalcTitle: 'Calculadora de diferencia horaria',
-    date: 'Fecha',
-    time: 'Hora',
-    timezone: 'Zona horaria',
-    dst: 'Horario de verano',
-    remove: 'Eliminar',
-    defaultCities: ['Local', 'Londres', 'Tokio']
-  },
-  fr: {
-    add: 'Ajouter',
-    calculate: 'Calculer',
-    swap: 'Inverser',
-    selectCity: 'Sélectionnez une ville',
-    timeCalcTitle: 'Calculateur de différence horaire',
-    date: 'Date',
-    time: 'Heure',
-    timezone: 'Fuseau horaire',
-    dst: 'Heure d’été',
-    remove: 'Supprimer',
-    defaultCities: ['Local', 'Londres', 'Tokyo']
-  },
-  ja: {
-    add: '追加',
-    calculate: '計算',
-    swap: '入れ替え',
-    selectCity: '都市を選択',
-    timeCalcTitle: '時差計算機',
-    date: '日付',
-    time: '時刻',
-    timezone: 'タイムゾーン',
-    dst: '夏時間',
-    remove: '削除',
-    defaultCities: ['ローカル', 'ロンドン', '東京']
-  }
-};
+  const defaultClocks = ['america_new_york', 'europe_london', 'asia_tokyo'];
 
-/* -------------------------
-   App state
-   ------------------------- */
-let language = 'en';
-let currentClocks = []; // array of city.id
-const defaultIds = [cities.find(c=>c.id==='local_auto').id, 'europe_london', 'asia_tokyo'];
-
-/* -------------------------
-   DOM references
-   ------------------------- */
-const cityAddSelect = document.getElementById('cityAddSelect');
-const addCityBtn = document.getElementById('addCityBtn');
-const clocksGrid = document.getElementById('clocksGrid');
-const calcCityA = document.getElementById('calcCityA');
-const calcCityB = document.getElementById('calcCityB');
-const calcDate = document.getElementById('calcDate');
-const calcTime = document.getElementById('calcTime');
-const calcBtn = document.getElementById('calcBtn');
-const swapBtn = document.getElementById('swapBtn');
-const resultPre = document.getElementById('result');
-const langSelect = document.getElementById('lang');
-const themeToggle = document.getElementById('themeToggle');
-
-/* -------------------------
-   Helpers: timezone offsets, DST detection
-   ------------------------- */
-
-function getOffsetMinutesFor(date, timeZone) {
-  // Return offset in minutes from UTC for given date/time and timezone
-  // Use Intl to get the local date/time string in that tz, then compute difference
-  // Approach: take formatted parts and build Date.UTC of those parts -> compare to utc ms
-  const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit', second:'2-digit',
-    hour12: false
-  });
-  const parts = dtf.formatToParts(date);
-  const map = {};
-  for (const p of parts) if (p.type !== 'literal') map[p.type]=p.value;
-  const y = parseInt(map.year,10), mo = parseInt(map.month,10)-1, d = parseInt(map.day,10);
-  const h = parseInt(map.hour,10), m = parseInt(map.minute,10), s = parseInt(map.second,10);
-  const utcMillis = Date.UTC(y,mo,d,h,m,s);
-  return Math.round((utcMillis - date.getTime())/60000);
-}
-
-function isDSTFor(date, timeZone) {
-  // Compare offsets for Jan 1 and Jul 1 - if current offset is less than max std offset, DST in effect
-  const jan = new Date(date.getFullYear(),0,1);
-  const jul = new Date(date.getFullYear(),6,1);
-  const offJan = getOffsetMinutesFor(jan,timeZone);
-  const offJul = getOffsetMinutesFor(jul,timeZone);
-  const std = Math.max(offJan,offJul);
-  const current = getOffsetMinutesFor(date,timeZone);
-  return current < std;
-}
-
-function formatOffset(mins) {
-  const sign = mins <= 0 ? '+' : '-'; // because offsetMinutes = localUTC - UTC? we match display style by inverting
-  const abs = Math.abs(mins);
-  const h = Math.floor(abs/60).toString().padStart(2,'0');
-  const m = (abs%60).toString().padStart(2,'0');
-  return `UTC${sign}${h}:${m}`;
-}
-
-/* -------------------------
-   Analog numbers placement math
-   ------------------------- */
-function placeNumbersOnFace(faceEl){
-  // Remove existing numbers
-  // We'll render numbers 1..12 dynamically (but cloning from template)
-  const diameter = faceEl.clientWidth;
-  const radius = diameter/2;
-  // Clear existing numbers first (except center/hand elements)
-  Array.from(faceEl.querySelectorAll('.clock-number')).forEach(n=>n.remove());
-  for(let i=1;i<=12;i++){
-    const ang = (i/12) * Math.PI * 2 - Math.PI/2; // starting from top
-    // position slightly inside rim
-    const r = radius * 0.78;
-    const x = radius + Math.cos(ang) * r;
-    const y = radius + Math.sin(ang) * r;
-    const div = document.createElement('div');
-    div.className = 'clock-number';
-    div.style.left = (x - 12) + 'px'; // center by subtracting half width (~12px)
-    div.style.top = (y - 12) + 'px';
-    div.style.width = '24px';
-    div.style.height = '24px';
-    div.style.lineHeight = '24px';
-    div.style.fontSize = (i%3===0? '1rem' : '0.9rem');
-    div.textContent = i;
-    faceEl.appendChild(div);
-  }
-}
-
-/* -------------------------
-   Build initial selects
-   ------------------------- */
-function populateCityAddSelect(){
-  cityAddSelect.innerHTML = '';
-  const defaultOpt = document.createElement('option');
-  defaultOpt.value='';
-  defaultOpt.textContent = LANGSTR[language].selectCity || 'Select a city';
-  defaultOpt.disabled = true; defaultOpt.selected = true;
-  cityAddSelect.appendChild(defaultOpt);
-
-  for(const c of cities){
-    // skip local_auto duplicate if already present
-    const opt = document.createElement('option');
-    opt.value = c.id; opt.textContent = c.name + ' — ' + c.tz;
-    cityAddSelect.appendChild(opt);
-  }
-}
-
-function populateCalcSelectors(){
-  calcCityA.innerHTML = ''; calcCityB.innerHTML = '';
-  for(const c of cities){
-    const o1 = document.createElement('option'); o1.value=c.id; o1.textContent=c.name;
-    const o2 = document.createElement('option'); o2.value=c.id; o2.textContent=c.name;
-    calcCityA.appendChild(o1); calcCityB.appendChild(o2);
-  }
-  // defaults
-  calcCityA.value = cities.find(c=>c.id==='local_auto')?.id || cities[0].id;
-  calcCityB.value = 'europe_london';
-}
-
-/* -------------------------
-   Clock card creation and rendering
-   ------------------------- */
-
-function createClockCard(city){
-  const wrapper = document.createElement('article');
-  wrapper.className='clock-card';
-  wrapper.setAttribute('data-city', city.id);
-
-  const removeBtn = document.createElement('button');
-  removeBtn.className='remove-btn';
-  removeBtn.title = LANGSTR[language].remove || 'Remove';
-  removeBtn.innerText = '✕';
-  removeBtn.onclick = ()=>{
-    currentClocks = currentClocks.filter(id=>id!==city.id);
-    renderClocks();
-  };
-  wrapper.appendChild(removeBtn);
-
-  const name = document.createElement('div'); name.className='city-name'; name.textContent = city.name;
-  wrapper.appendChild(name);
-
-  const tzinfo = document.createElement('div'); tzinfo.className='tz-info'; tzinfo.textContent = city.tz;
-  wrapper.appendChild(tzinfo);
-
-  const analogWrap = document.createElement('div'); analogWrap.className='analog-wrap';
-  const border = document.createElement('div'); border.className='clock-border';
-  const face = document.createElement('div'); face.className='analog-face';
-  face.id = `face-${city.id}`;
-  analogWrap.appendChild(border); analogWrap.appendChild(face);
-
-  // Hands
-  const hour = document.createElement('div'); hour.className='hand hour-hand'; hour.id = `hour-${city.id}`;
-  const minute = document.createElement('div'); minute.className='hand minute-hand'; minute.id = `minute-${city.id}`;
-  const second = document.createElement('div'); second.className='hand second-hand'; second.id = `second-${city.id}`;
-  const centerDot = document.createElement('div'); centerDot.className='center-dot';
-  face.appendChild(hour); face.appendChild(minute); face.appendChild(second); face.appendChild(centerDot);
-
-  analogWrap.appendChild(face);
-  wrapper.appendChild(analogWrap);
-
-  // place numbers after appended to DOM to get correct sizes
-  requestAnimationFrame(()=>placeNumbersOnFace(face));
-
-  const digital = document.createElement('div'); digital.className='digital'; digital.id = `digital-${city.id}`; digital.textContent='--:--:--';
-  wrapper.appendChild(digital);
-
-  const dateLine = document.createElement('div'); dateLine.className='date-line'; dateLine.id = `date-${city.id}`;
-  wrapper.appendChild(dateLine);
-
-  return wrapper;
-}
-
-function renderClocks(){
-  clocksGrid.innerHTML = '';
-  for(const id of currentClocks){
-    const city = cities.find(c=>c.id===id);
-    if(!city) continue;
-    const card = createClockCard(city);
-    clocksGrid.appendChild(card);
-  }
-  // update selects (add) to prevent duplicate adding
-  populateCityAddSelect();
-}
-
-/* -------------------------
-   Time updating logic
-   ------------------------- */
-
-function getPartsForTime(date, tz){
-  // return {hour,minute,second}
-  const parts = new Intl.DateTimeFormat('en-GB', {timeZone: tz, hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false}).formatToParts(date);
-  let hour=0, minute=0, second=0;
-  for(const p of parts){
-    if(p.type==='hour') hour = Number(p.value);
-    if(p.type==='minute') minute = Number(p.value);
-    if(p.type==='second') second = Number(p.value);
-  }
-  return {hour, minute, second};
-}
-
-function updateAllTimes(){
-  const now = new Date();
-  for(const id of currentClocks){
-    const city = cities.find(c=>c.id===id);
-    if(!city) continue;
-    const {hour,minute,second} = getPartsForTime(now, city.tz);
-
-    // rotate hands
-    const hourHand = document.getElementById(`hour-${id}`);
-    const minuteHand = document.getElementById(`minute-${id}`);
-    const secondHand = document.getElementById(`second-${id}`);
-    if(hourHand) hourHand.style.transform = `translate(-50%,-100%) rotate(${((hour%12)+(minute/60))*30}deg)`;
-    if(minuteHand) minuteHand.style.transform = `translate(-50%,-100%) rotate(${(minute + second/60)*6}deg)`;
-    if(secondHand) secondHand.style.transform = `translate(-50%,-100%) rotate(${second*6}deg)`;
-
-    // digital/time text
-    const digital = document.getElementById(`digital-${id}`);
-    const dateLine = document.getElementById(`date-${id}`);
-    if(digital){
-      const dd = new Date(); // show full localized string from tz
-      const formattedTime = new Intl.DateTimeFormat('en-GB', {timeZone: city.tz, hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false}).format(dd);
-      digital.textContent = formattedTime;
-    }
-    if(dateLine){
-      const date = new Intl.DateTimeFormat('en-GB', {timeZone: city.tz, weekday:'short', year:'numeric', month:'short', day:'numeric'}).format(now);
-      const offsetMin = getOffsetMinutesFor(now, city.tz);
-      const offsetStr = formatOffset(offsetMin);
-      const dst = isDSTFor(now, city.tz) ? 'Yes' : 'No';
-      dateLine.textContent = `${offsetStr} · DST: ${dst}`;
+  // Place numbers 1-12 evenly around the analog clock face
+  function placeNumbers(face) {
+    const radius = 85; // radius for number placement inside 100x100 center circle
+    const centerX = 100, centerY = 100;
+    for(let i=1; i<=12; i++) {
+      let angle = (i * 30 - 90) * Math.PI / 180; // offset so 12 is at top
+      let x = centerX + radius * Math.cos(angle);
+      let y = centerY + radius * Math.sin(angle);
+      const span = document.createElement('span');
+      span.textContent = i;
+      span.className = 'analog-number';
+      span.style.left = `${x}px`;
+      span.style.top = `${y}px`;
+      span.style.transform = 'translate(-50%, -50%)';
+      face.appendChild(span);
     }
   }
-}
 
-/* -------------------------
-   Calculator functions
-   ------------------------- */
+  function createClock(city) {
+    const container = document.createElement('div');
+    container.className = 'clock';
+    container.setAttribute('aria-label', `Clock for ${city.name}`);
 
-function swapCities(){
-  const a = calcCityA.value, b = calcCityB.value;
-  calcCityA.value = b; calcCityB.value = a;
-}
+    // Analog clock face
+    const face = document.createElement('div');
+    face.className = 'analog-face';
+    face.style.position = 'relative';
+    placeNumbers(face);
 
-function calculate(){
-  // read selections & date/time
-  const aId = calcCityA.value, bId = calcCityB.value;
-  if(!aId || !bId){ resultPre.textContent = 'Select both cities.'; return; }
-  const cityA = cities.find(c=>c.id===aId), cityB = cities.find(c=>c.id===bId);
-  if(!cityA||!cityB){ resultPre.textContent = 'Invalid cities.'; return; }
+    // Clock hands container
+    const hands = document.createElement('div');
+    hands.style.position = 'absolute';
+    hands.style.left = '50%';
+    hands.style.top = '50%';
+    hands.style.width = '100%';
+    hands.style.height = '100%';
+    hands.style.transform = 'translate(-50%, -50%)';
 
-  const dateStr = calcDate.value;
-  const timeStr = calcTime.value;
-  if(!dateStr||!timeStr){ resultPre.textContent = 'Pick date and time in first city.'; return; }
+    ['hour', 'minute', 'second'].forEach(hand => {
+      const el = document.createElement('div');
+      el.className = `hand hand-${hand}`;
+      el.style.position = 'absolute';
+      el.style.background = (hand === 'second') ? '#d00' : '#007acc';
+      el.style.borderRadius = '2px';
+      el.style.transformOrigin = 'bottom center';
+      el.style.bottom = '50%';
+      el.style.left = '50%';
+      el.style.width = hand === 'second' ? '2px' : '4px';
+      el.style.height = hand === 'second' ? '45px' : (hand === 'minute' ? '35px' : '25px');
+      el.style.transform = 'rotate(0deg)';
+      hands.appendChild(el);
+    });
 
-  // Build a Date object that represents the provided local date/time IN CITY A
-  // approach: interpret date/time as local in cityA by using parts & get timezone offset for that instant
-  // We'll create an initial Date as if it's in UTC: Date.parse(dateStr + 'T' + timeStr + 'Z'), then adjust using offsets difference
-  const localInBrowser = new Date(`${dateStr}T${timeStr}:00`);
-  if(isNaN(localInBrowser)) { resultPre.textContent = 'Invalid date/time.'; return; }
+    face.appendChild(hands);
+    container.appendChild(face);
 
-  // We need to find the UTC ms corresponding to that local time in CITY A.
-  // Find offset minutes of CITY A at that instant (we need to know the instant; but we have only local wall time for cityA).
-  // So we'll compute:
-  // 1) Assume the localInBrowser corresponds to clock reading in cityA.
-  // 2) Determine what UTC time would produce those local clock readings for cityA:
-  //    utcMillis = localWallTimeAsIfUTC - offsetCityA_at_that_instant * 60000
-  // Trick: create a Date representing the same Y/M/D H:M:S in UTC, then compute offsetCity and adjust.
+    // Digital time display
+    const digital = document.createElement('div');
+    digital.className = 'digital-time';
+    container.appendChild(digital);
 
-  // create a Date object using the Y/M/D H:M:S but treated as UTC:
-  const parts = dateStr.split('-').map(Number);
-  const timeParts = timeStr.split(':').map(Number);
-  const asIfUTC = Date.UTC(parts[0], parts[1]-1, parts[2], timeParts[0], timeParts[1], 0);
-  // get offset minutes for cityA at the instant if UTC = asIfUTC -> find what the offset for cityA would be at that UTC instant
-  const asIfDate = new Date(asIfUTC);
-  const offsetA = getOffsetMinutesFor(asIfDate, cityA.tz); // minutes
-  // UTC time corresponding to local cityA wall-clock:
-  const utcMs = asIfUTC - (offsetA * 60000);
+    // Timezone info
+    const tzinfo = document.createElement('div');
+    tzinfo.className = 'tz-info';
+    tzinfo.textContent = city.tz;
+    container.appendChild(tzinfo);
 
-  const utcDate = new Date(utcMs);
-
-  // cityB local time at that UTC
-  const partsB = new Intl.DateTimeFormat('en-GB',{timeZone:cityB.tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(utcDate);
-  const mappedB = {}; for(const p of partsB) if(p.type!=='literal') mappedB[p.type]=p.value;
-  const cityBLocalStr = `${mappedB.year}-${mappedB.month}-${mappedB.day} ${mappedB.hour}:${mappedB.minute}:${mappedB.second}`;
-
-  // offsets and DST
-  const offsetAMin = getOffsetMinutesFor(utcDate, cityA.tz);
-  const offsetBMin = getOffsetMinutesFor(utcDate, cityB.tz);
-  const diffMin = offsetBMin - offsetAMin;
-  const diffH = diffMin/60;
-
-  // DST at those times
-  const dstA = isDSTFor(utcDate, cityA.tz) ? 'Yes':'No';
-  const dstB = isDSTFor(utcDate, cityB.tz) ? 'Yes':'No';
-
-  const formattedA = formatDateTime(new Date(utcMs + offsetAMin*60000), cityA.tz); // show as local reading
-  const formattedB = formatDateTime(new Date(utcMs + offsetBMin*60000), cityB.tz);
-
-  resultPre.textContent =
-`${cityA.name} → ${formattedA}
-${cityB.name} → ${formattedB}
-
-Time difference: ${diffH >= 0 ? '+' : ''}${diffH} hours
-${cityA.name} DST: ${dstA}
-${cityB.name} DST: ${dstB}
-(Reference UTC time: ${new Date(utcMs).toUTCString()})
-`;
-}
-
-/* -------------------------
-   Theme and language handlers
-   ------------------------- */
-function setLanguage(l){
-  language = l;
-  // update labels where dynamic (add button, placeholder, calculator)
-  addCityBtn.textContent = LANGSTR[language].add || 'Add';
-  calcBtn.textContent = LANGSTR[language].calculate || 'Calculate';
-  swapBtn.textContent = LANGSTR[language].swap || 'Swap';
-  // Optionally update text content for remove buttons (title attribute)
-  document.querySelectorAll('.remove-btn').forEach(b=>b.title = LANGSTR[language].remove || 'Remove');
-  populateCityAddSelect();
-  populateCalcSelectors();
-}
-
-function applyAutoTheme(){
-  // respect prefers-color-scheme, otherwise use hour-based switching for local time
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if(prefersDark){
-    document.documentElement.style.background = ''; // handled in CSS
-    return;
+    return { container, digital, hands };
   }
-  // fallback: use local time to set theme
-  const h = new Date().getHours();
-  if(h>=19 || h<6) document.documentElement.style.background = 'var(--bg)'; // dark via css variable using prefers-color-scheme or not
-}
 
-/* -------------------------
-   Event wiring
-   ------------------------- */
+  const clocksContainer = document.getElementById('clocksContainer');
+  const clocks = [];
 
-addCityBtn.onclick = ()=>{
-  const val = cityAddSelect.value;
-  if(!val) return;
-  if(currentClocks.includes(val)){ alert('City already shown'); return; }
-  currentClocks.push(val);
-  renderClocks();
-};
+  function updateClocks() {
+    const now = new Date();
+    clocks.forEach(({ city, digital, hands }) => {
+      // Using Intl.DateTimeFormat for local city time
+      const options = { timeZone: city.tz, hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      const formatter = new Intl.DateTimeFormat([], options);
+      const parts = formatter.formatToParts(now);
+      const timeParts = {};
+      parts.forEach(p => { if(p.type !== 'literal') timeParts[p.type] = p.value; });
 
-cityAddSelect.addEventListener('input', (e)=>{}); // placeholder for future search enhancements
+      digital.textContent = `${timeParts.hour}:${timeParts.minute}:${timeParts.second}`;
 
-langSelect.onchange = (e)=> setLanguage(e.target.value);
+      // Update analog hands rotation
+      const hour = parseInt(timeParts.hour, 10) % 12;
+      const minute = parseInt(timeParts.minute, 10);
+      const second = parseInt(timeParts.second, 10);
 
-themeToggle.onclick = ()=>{
-  // toggle explicit dark class on html for manual override
-  document.documentElement.classList.toggle('force-dark');
-  // small visual cue
-  themeToggle.textContent = document.documentElement.classList.contains('force-dark') ? 'Dark' : 'Theme';
-};
+      // Calculate angles
+      const hourAngle = (hour * 30) + (minute * 0.5);
+      const minuteAngle = minute * 6;
+      const secondAngle = second * 6;
 
-calcBtn.onclick = calculate;
-swapBtn.onclick = swapCities;
-
-/* -------------------------
-   Initialize app
-   ------------------------- */
-
-function populateCityAddSelect(){
-  cityAddSelect.innerHTML = '';
-  const placeholder = document.createElement('option'); placeholder.value=''; placeholder.textContent = LANGSTR[language].selectCity || 'Select a city';
-  placeholder.disabled = true; placeholder.selected = true;
-  cityAddSelect.appendChild(placeholder);
-  for(const c of cities){
-    // don't show already current ones to avoid duplicates
-    if(currentClocks.includes(c.id)) continue;
-    const o = document.createElement('option'); o.value=c.id; o.textContent = `${c.name} — ${c.tz}`;
-    cityAddSelect.appendChild(o);
+      hands.querySelector('.hand-hour').style.transform = `rotate(${hourAngle}deg)`;
+      hands.querySelector('.hand-minute').style.transform = `rotate(${minuteAngle}deg)`;
+      hands.querySelector('.hand-second').style.transform = `rotate(${secondAngle}deg)`;
+    });
   }
-}
 
-function populateCalcSelectors(){
-  calcCityA.innerHTML = ''; calcCityB.innerHTML = '';
-  for(const c of cities){
-    const oa = document.createElement('option'); oa.value=c.id; oa.textContent=c.name; calcCityA.appendChild(oa);
-    const ob = document.createElement('option'); ob.value=c.id; ob.textContent=c.name; calcCityB.appendChild(ob);
+  // Initialize clocks
+  function init() {
+    for(const cityId of defaultClocks){
+      const city = cities.find(c=>c.id===cityId);
+      if(city){
+        const clockObj = createClock(city);
+        clocksContainer.appendChild(clockObj.container);
+        clocks.push({ city, ...clockObj });
+      }
+    }
+    updateClocks();
+    setInterval(updateClocks, 1000);
+
+    // Populate calculator selects
+    const calcCityA = document.getElementById('calcCityA');
+    const calcCityB = document.getElementById('calcCityB');
+    for(const c of cities){
+      let optA = document.createElement('option'); optA.value = c.id; optA.textContent = c.name; calcCityA.appendChild(optA);
+      let optB = document.createElement('option'); optB.value = c.id; optB.textContent = c.name; calcCityB.appendChild(optB);
+    }
+    calcCityA.value = defaultClocks[0];
+    calcCityB.value = defaultClocks[1];
+
+    // Set default date/time to now
+    const nowISO = new Date().toISOString();
+    document.getElementById('calcDate').value = nowISO.slice(0,10);
+    document.getElementById('calcTime').value = nowISO.slice(11,16);
+
+    document.getElementById('calcButton').addEventListener('click', () => {
+      const cityA = cities.find(c => c.id === calcCityA.value);
+      const cityB = cities.find(c => c.id === calcCityB.value);
+      if(!cityA || !cityB) return;
+
+      const dateStr = document.getElementById('calcDate').value;
+      const timeStr = document.getElementById('calcTime').value;
+      if(!dateStr || !timeStr) return;
+
+      // Construct date/time in city A timezone (approximate, using UTC offset)
+      // Note: This is a rough calculation for demo purposes
+      const dateTime = new Date(`${dateStr}T${timeStr}:00Z`);
+
+      const tzA = Intl.DateTimeFormat('en-US', {timeZone: cityA.tz, timeZoneName:'short'}).formatToParts(dateTime).find(p=>p.type==='timeZoneName')?.value || '';
+      const tzB = Intl.DateTimeFormat('en-US', {timeZone: cityB.tz, timeZoneName:'short'}).formatToParts(dateTime).find(p=>p.type==='timeZoneName')?.value || '';
+
+      // Get offsets by creating times in each zone
+      function getOffsetMinutes(tz, date) {
+        return -date.toLocaleString('en-US', {timeZone: tz, hour12:false})
+          .split(':').map(Number).reduce((h,m)=>h*60+m,0);
+      }
+
+      // Better to use Date.toLocaleString with timeZone and convert to timestamp diff
+      // Here's a simplified approach:
+      const utcTimestamp = dateTime.getTime();
+
+      const cityATime = new Date(dateTime.toLocaleString('en-US', {timeZone: cityA.tz}));
+      const cityBTime = new Date(dateTime.toLocaleString('en-US', {timeZone: cityB.tz}));
+      const diffMs = cityBTime.getTime() - cityATime.getTime();
+      const diffH = diffMs / 3600000;
+
+      document.getElementById('calcResult').textContent =
+        `At ${timeStr} on ${dateStr} in ${cityA.name}, the time in ${cityB.name} is ${cityBTime.toTimeString().slice(0,5)} (${tzB}). Difference: ${diffH.toFixed(2)} hours.`;
+    });
   }
-  calcCityA.value = cities[0].id; calcCityB.value = 'europe_london';
-}
 
-function initDefaults(){
-  currentClocks = [...defaultIds]; // default visible
-  renderClocks();
-  populateCityAddSelect();
-  populateCalcSelectors();
-  setLanguage('en');
-  // set calc date/time to local now
-  const now = new Date();
-  calcDate.value = now.toISOString().slice(0,10);
-  calcTime.value = now.toTimeString().slice(0,5);
-  applyAutoTheme();
-  // place numbers on faces after render (in case of render timing)
-  setTimeout(()=>{document.querySelectorAll('.analog-face').forEach(face=>placeNumbersOnFace(face));},200);
-}
-
-/* run */
-initDefaults();
-setInterval(updateAllTimes, 1000);
-updateAllTimes();
-
+  init();
 </script>
+
 </body>
 </html>
