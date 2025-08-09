@@ -3,607 +3,594 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>World Clock Dashboard</title>
+<title>World Clocks & Time Difference Calculator</title>
 <style>
+  /* Base styles */
   body {
-    margin: 0; padding: 1rem; font-family: Arial, sans-serif;
-    background: #fff;
+    font-family: Arial, sans-serif;
+    background: #f9f9f9;
     color: #222;
-    transition: background 0.4s, color 0.4s;
+    margin: 0; padding: 20px;
+    transition: background 0.5s, color 0.5s;
   }
   body.night {
     background: #121212;
-    color: #eee;
+    color: #ddd;
   }
-  #container {
+  h1, h2 {
+    margin-top: 0;
+  }
+  .container {
     max-width: 900px;
     margin: auto;
   }
-  h1, h2 {
-    text-align: center;
-  }
-  #controls {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  button, select, input {
-    font-family: inherit;
-    font-size: 1rem;
-    margin: 0 0.3rem;
-    padding: 0.5rem 0.8rem;
-    border-radius: 6px;
-    border: 1px solid #888;
-    cursor: pointer;
-    background: #eee;
-    color: #222;
-    transition: background 0.3s, color 0.3s;
-  }
-  body.night button, body.night select, body.night input {
-    background: #333;
-    color: #eee;
-    border-color: #555;
-  }
+
+  /* Clocks area */
   #clocks {
     display: flex;
+    gap: 20px;
     flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
+    margin-bottom: 30px;
   }
-  .clock-card {
-    background: #fafafa;
-    border: 2px solid #0077cc;
+  .clock {
+    background: #fff;
+    border: 3px solid #2a7ae2;
     border-radius: 10px;
+    padding: 15px;
     width: 280px;
-    padding: 1rem;
     box-sizing: border-box;
-    text-align: center;
-    color: inherit;
-    box-shadow: 0 0 6px rgb(0 119 204 / 0.3);
-    position: relative;
+    box-shadow: 0 4px 6px rgba(42, 122, 226, 0.3);
+    transition: background 0.5s, border-color 0.5s, color 0.5s;
   }
-  body.night .clock-card {
-    background: #1c1c1c;
-    border-color: #3399ff;
-    box-shadow: 0 0 10px rgb(51 153 255 / 0.7);
-  }
-  .clock-header {
-    font-weight: 700;
-    font-size: 1.3rem;
-    margin-bottom: 0.3rem;
-  }
-  .clock-subheader {
-    font-size: 0.85rem;
-    color: #555;
-    margin-bottom: 0.7rem;
-  }
-  body.night .clock-subheader {
-    color: #aaa;
-  }
-  .digital-clock {
-    font-family: monospace;
-    font-size: 2rem;
-    letter-spacing: 2px;
-    margin-bottom: 0.8rem;
-  }
-  .analog-clock {
-    position: relative;
-    margin: 0 auto 1rem;
-    width: 220px;
-    height: 220px;
-    border: 5px solid #0077cc;
-    border-radius: 50%;
-    background: white;
-    box-sizing: border-box;
-  }
-  body.night .analog-clock {
-    border-color: #3399ff;
+  body.night .clock {
     background: #222;
+    border-color: #5599ff;
+    box-shadow: 0 4px 8px rgba(85, 153, 255, 0.6);
   }
-  .analog-clock .number {
+
+  .city-name {
+    font-weight: bold;
+    font-size: 1.3em;
+    margin-bottom: 6px;
+  }
+  .timezone-info {
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    color: #555;
+  }
+  body.night .timezone-info {
+    color: #bbb;
+  }
+
+  /* Digital clock */
+  .digital {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.7em;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  /* Analog clock */
+  .analog {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: auto;
+    border: 4px solid #2a7ae2;
+    border-radius: 50%;
+    background: #fafafa;
+    box-sizing: border-box;
+  }
+  body.night .analog {
+    background: #111;
+    border-color: #5599ff;
+  }
+  .analog .center-dot {
     position: absolute;
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: #0077cc;
-    user-select: none;
+    background: #2a7ae2;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
   }
-  body.night .analog-clock .number {
-    color: #66b2ff;
+  body.night .analog .center-dot {
+    background: #5599ff;
   }
-  .hand {
+  .analog .hand {
     position: absolute;
-    bottom: 50%;
+    background: #2a7ae2;
+    top: 50%;
     left: 50%;
-    background: #0077cc;
-    border-radius: 6px;
     transform-origin: bottom center;
-    transition: background 0.4s;
+    transform: translateX(-50%);
+    border-radius: 4px;
   }
-  body.night .hand {
-    background: #66b2ff;
+  body.night .analog .hand {
+    background: #5599ff;
   }
   .hand.hour {
     width: 8px;
-    height: 55px;
+    height: 50px;
+    margin-top: -50px;
+    z-index: 7;
   }
   .hand.minute {
-    width: 5px;
-    height: 80px;
+    width: 6px;
+    height: 70px;
+    margin-top: -70px;
+    z-index: 8;
   }
   .hand.second {
     width: 2px;
-    height: 95px;
-    background: #cc0000;
+    height: 80px;
+    margin-top: -80px;
+    background: #e74c3c;
   }
   body.night .hand.second {
-    background: #ff6666;
+    background: #ff6b6b;
   }
-  .remove-clock {
+
+  /* Numbers on clock face */
+  .analog .number {
     position: absolute;
-    top: 8px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #cc0000;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #2a7ae2;
     user-select: none;
   }
-  .remove-clock:hover {
-    color: #ff4444;
+  body.night .analog .number {
+    color: #5599ff;
   }
-  #addCityContainer {
-    margin: 2rem auto;
-    max-width: 600px;
-    text-align: center;
-  }
-  #cityAddSelect {
-    width: 70%;
-    padding: 0.5rem;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #aaa;
-  }
-  #addCityBtn {
-    padding: 0.5rem 1rem;
-    margin-left: 0.8rem;
-    font-size: 1rem;
-    cursor: pointer;
-    border-radius: 6px;
-    border: 1px solid #0077cc;
-    background: #0077cc;
-    color: white;
-    transition: background 0.3s;
-  }
-  #addCityBtn:hover {
-    background: #005fa3;
-  }
-  #time-calculator {
-    margin: 2rem auto;
-    max-width: 600px;
-    background: #f4f8fc;
-    padding: 1rem 1.3rem;
-    border-radius: 12px;
-    border: 2px solid #0077cc;
+
+  /* Controls */
+  #controls {
+    margin-bottom: 30px;
+    background: #fff;
+    border: 2px solid #2a7ae2;
+    border-radius: 10px;
+    padding: 15px;
     box-sizing: border-box;
   }
-  body.night #time-calculator {
-    background: #1a1a2e;
-    border-color: #3399ff;
+  body.night #controls {
+    background: #222;
+    border-color: #5599ff;
   }
-  #time-calculator h2 {
-    margin-top: 0;
-    text-align: center;
-  }
-  #time-calculator .calc-row {
-    margin-bottom: 0.8rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  #time-calculator label {
-    flex: 1 0 35%;
+  label {
+    display: block;
+    margin-bottom: 6px;
     font-weight: 600;
   }
-  #time-calculator select,
-  #time-calculator input[type="date"],
-  #time-calculator input[type="time"] {
-    flex: 1 0 60%;
-    padding: 0.4rem;
-    font-size: 1rem;
+  select, button {
+    padding: 6px 12px;
+    font-size: 1em;
+    border: 1.5px solid #2a7ae2;
     border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  body.night #time-calculator select,
-  body.night #time-calculator input[type="date"],
-  body.night #time-calculator input[type="time"] {
-    background: #222;
-    border-color: #555;
-    color: #eee;
-  }
-  #calcButton {
-    display: block;
+    margin-bottom: 12px;
     width: 100%;
-    padding: 0.6rem;
-    font-size: 1.1rem;
-    font-weight: 700;
+    max-width: 300px;
+    background: white;
+    color: #222;
     cursor: pointer;
-    border-radius: 6px;
-    border: none;
-    background: #0077cc;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.night select, body.night button {
+    background: #111;
+    border-color: #5599ff;
+    color: #ddd;
+  }
+  button:hover {
+    background: #2a7ae2;
     color: white;
-    transition: background 0.3s;
   }
-  #calcButton:hover {
-    background: #005fa3;
+  body.night button:hover {
+    background: #5599ff;
   }
-  #calcResult {
-    margin-top: 1rem;
-    font-weight: 700;
-    text-align: center;
-    font-size: 1.1rem;
-    min-height: 1.5em;
+
+  /* Calculator styles */
+  #timecalc {
+    background: #fff;
+    border: 2px solid #2a7ae2;
+    border-radius: 10px;
+    padding: 15px;
+    max-width: 500px;
+  }
+  body.night #timecalc {
+    background: #222;
+    border-color: #5599ff;
+  }
+  #timecalc label {
+    margin-top: 10px;
+  }
+  #result {
+    margin-top: 15px;
+    font-weight: bold;
+  }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    #clocks {
+      flex-direction: column;
+      align-items: center;
+    }
+    .clock {
+      width: 90%;
+    }
   }
 </style>
 </head>
 <body>
-<div id="container">
-  <h1>World Clock Dashboard</h1>
-  <div id="controls" aria-label="Controls">
-    <button id="toggleDayNightBtn" aria-pressed="false">Switch to Night Mode</button>
+
+<div class="container">
+  <h1>World Clocks & Time Difference Calculator</h1>
+
+  <div id="clocks">
+    <!-- Clocks inserted here -->
   </div>
 
-  <div id="clocks" aria-live="polite" aria-atomic="true" aria-relevant="additions removals">
-    <!-- Clock cards will go here -->
+  <div id="controls">
+    <label for="cityAddSelect">Add Clock (Select City):</label>
+    <select id="cityAddSelect"></select>
+    <button id="addClockBtn">Add Clock</button>
+    <button id="toggleModeBtn">Switch to Night Mode</button>
   </div>
 
-  <div id="addCityContainer" aria-label="Add a city clock">
-    <select id="cityAddSelect" aria-label="Select a city to add"></select>
-    <button id="addCityBtn">Add City Clock</button>
-  </div>
-
-  <section id="time-calculator" aria-label="Time Difference Calculator">
+  <div id="timecalc">
     <h2>Time Difference Calculator</h2>
-    <div class="calc-row">
-      <label for="calcCityA">City A:</label>
-      <select id="calcCityA"></select>
-    </div>
-    <div class="calc-row">
-      <label for="calcCityB">City B:</label>
-      <select id="calcCityB"></select>
-    </div>
-    <div class="calc-row">
-      <label for="calcDate">Date:</label>
-      <input type="date" id="calcDate" />
-    </div>
-    <div class="calc-row">
-      <label for="calcTime">Time (24h):</label>
-      <input type="time" id="calcTime" />
-    </div>
-    <button id="calcButton">Calculate Difference</button>
-    <div id="calcResult" role="region" aria-live="polite"></div>
-  </section>
+    <label for="calcCityA">City A:</label>
+    <select id="calcCityA"></select>
+
+    <label for="calcCityB">City B:</label>
+    <select id="calcCityB"></select>
+
+    <label for="calcDate">Date:</label>
+    <input type="date" id="calcDate" />
+
+    <label for="calcTime">Time (24h):</label>
+    <input type="time" id="calcTime" step="60" />
+
+    <button id="calcBtn">Calculate Difference</button>
+    <div id="result"></div>
+  </div>
 </div>
 
 <script>
-// --- City list ---
-const cities = [
-  { id: 'america_new_york', name: 'New York', tz: 'America/New_York' },
-  { id: 'europe_london', name: 'London', tz: 'Europe/London' },
-  { id: 'asia_tokyo', name: 'Tokyo', tz: 'Asia/Tokyo' },
-  { id: 'asia_shanghai', name: 'Shanghai', tz: 'Asia/Shanghai' },
-  { id: 'asia_delhi', name: 'Delhi', tz: 'Asia/Kolkata' },
-  { id: 'europe_paris', name: 'Paris', tz: 'Europe/Paris' },
-  { id: 'australia_sydney', name: 'Sydney', tz: 'Australia/Sydney' },
-  { id: 'america_los_angeles', name: 'Los Angeles', tz: 'America/Los_Angeles' },
-  { id: 'america_chicago', name: 'Chicago', tz: 'America/Chicago' },
-  { id: 'europe_berlin', name: 'Berlin', tz: 'Europe/Berlin' },
-  { id: 'africa_cairo', name: 'Cairo', tz: 'Africa/Cairo' },
-  { id: 'america_sao_paulo', name: 'São Paulo', tz: 'America/Sao_Paulo' },
-];
+  const cities = [
+    {id: 'america_new_york', name: 'New York', tz: 'America/New_York'},
+    {id: 'europe_london', name: 'London', tz: 'Europe/London'},
+    {id: 'asia_tokyo', name: 'Tokyo', tz: 'Asia/Tokyo'},
+    {id: 'europe_paris', name: 'Paris', tz: 'Europe/Paris'},
+    {id: 'america_los_angeles', name: 'Los Angeles', tz: 'America/Los_Angeles'},
+    {id: 'asia_shanghai', name: 'Shanghai', tz: 'Asia/Shanghai'},
+    {id: 'asia_dubai', name: 'Dubai', tz: 'Asia/Dubai'},
+    {id: 'america_sao_paulo', name: 'São Paulo', tz: 'America/Sao_Paulo'},
+    {id: 'africa_cairo', name: 'Cairo', tz: 'Africa/Cairo'},
+    {id: 'oceania_sydney', name: 'Sydney', tz: 'Australia/Sydney'}
+  ];
 
-// --- Initial clocks to show ---
-let activeClocks = [
-  'america_new_york',
-  'europe_london',
-  'asia_tokyo'
-];
+  let currentClocks = ['america_new_york', 'europe_london', 'asia_tokyo'];
+  let isNightMode = false;
 
-// --- Utilities ---
-function pad(num) {
-  return num < 10 ? '0' + num : num;
-}
-function formatTime(date, tz) {
-  return date.toLocaleTimeString('en-US', { timeZone: tz, hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
-}
-function getCityById(id) {
-  return cities.find(c => c.id === id);
-}
+  const clocksContainer = document.getElementById('clocks');
+  const cityAddSelect = document.getElementById('cityAddSelect');
+  const addClockBtn = document.getElementById('addClockBtn');
+  const toggleModeBtn = document.getElementById('toggleModeBtn');
+  const calcCityA = document.getElementById('calcCityA');
+  const calcCityB = document.getElementById('calcCityB');
+  const calcDate = document.getElementById('calcDate');
+  const calcTime = document.getElementById('calcTime');
+  const calcBtn = document.getElementById('calcBtn');
+  const resultDiv = document.getElementById('result');
 
-// --- Build city dropdowns ---
-const cityAddSelect = document.getElementById('cityAddSelect');
-const calcCityA = document.getElementById('calcCityA');
-const calcCityB = document.getElementById('calcCityB');
-
-function populateCitySelect(selectEl) {
-  selectEl.innerHTML = '';
-  for (const city of cities) {
-    const opt = document.createElement('option');
-    opt.value = city.id;
-    opt.textContent = city.name;
-    selectEl.appendChild(opt);
+  function populateCitySelects() {
+    [cityAddSelect, calcCityA, calcCityB].forEach(select => {
+      select.innerHTML = '';
+      cities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city.id;
+        option.textContent = city.name;
+        select.appendChild(option);
+      });
+    });
   }
-}
-populateCitySelect(cityAddSelect);
-populateCitySelect(calcCityA);
-populateCitySelect(calcCityB);
 
-// Default calculator cities
-calcCityA.value = 'america_new_york';
-calcCityB.value = 'europe_london';
+  // Create analog clock numbers positions
+  const numberPositions = [
+    {num: 12, top: '8px', left: '82px'},
+    {num: 1, top: '27px', left: '130px'},
+    {num: 2, top: '63px', left: '160px'},
+    {num: 3, top: '82px', left: '170px'},
+    {num: 4, top: '102px', left: '160px'},
+    {num: 5, top: '140px', left: '130px'},
+    {num: 6, top: '158px', left: '82px'},
+    {num: 7, top: '140px', left: '36px'},
+    {num: 8, top: '102px', left: '18px'},
+    {num: 9, top: '82px', left: '6px'},
+    {num: 10, top: '63px', left: '18px'},
+    {num: 11, top: '27px', left: '36px'}
+  ];
 
-// --- Day/Night toggle ---
-const toggleBtn = document.getElementById('toggleDayNightBtn');
-toggleBtn.addEventListener('click', () => {
-  document.body.classList.toggle('night');
-  const isNight = document.body.classList.contains('night');
-  toggleBtn.textContent = isNight ? 'Switch to Day Mode' : 'Switch to Night Mode';
-  toggleBtn.setAttribute('aria-pressed', isNight.toString());
-});
+  // Create a single clock element for a city
+  function createClockElement(city) {
+    const clockDiv = document.createElement('div');
+    clockDiv.className = 'clock';
+    clockDiv.id = `clock-${city.id}`;
 
-// --- Clock Creation ---
-const clocksDiv = document.getElementById('clocks');
+    const cityName = document.createElement('div');
+    cityName.className = 'city-name';
+    cityName.textContent = city.name;
+    clockDiv.appendChild(cityName);
 
-function createClockCard(cityId) {
-  const city = getCityById(cityId);
-  if (!city) return null;
+    const tzInfo = document.createElement('div');
+    tzInfo.className = 'timezone-info';
+    clockDiv.appendChild(tzInfo);
 
-  // Container
-  const card = document.createElement('div');
-  card.className = 'clock-card';
-  card.setAttribute('data-cityid', cityId);
-  card.setAttribute('role', 'region');
-  card.setAttribute('aria-label', `Clock for ${city.name}`);
+    const digitalClock = document.createElement('div');
+    digitalClock.className = 'digital';
+    clockDiv.appendChild(digitalClock);
 
-  // Remove button
-  const removeBtn = document.createElement('span');
-  removeBtn.className = 'remove-clock';
-  removeBtn.textContent = '×';
-  removeBtn.title = `Remove ${city.name}`;
-  removeBtn.setAttribute('role', 'button');
-  removeBtn.tabIndex = 0;
-  removeBtn.addEventListener('click', () => {
-    removeClock(cityId);
-  });
-  removeBtn.addEventListener('keydown', e => {
-    if(e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      removeClock(cityId);
+    // Analog clock container
+    const analog = document.createElement('div');
+    analog.className = 'analog';
+    clockDiv.appendChild(analog);
+
+    // Add numbers on analog clock face
+    numberPositions.forEach(pos => {
+      const numDiv = document.createElement('div');
+      numDiv.className = 'number';
+      numDiv.textContent = pos.num;
+      numDiv.style.top = pos.top;
+      numDiv.style.left = pos.left;
+      analog.appendChild(numDiv);
+    });
+
+    // Create hour, minute, second hands
+    const hourHand = document.createElement('div');
+    hourHand.className = 'hand hour';
+    analog.appendChild(hourHand);
+
+    const minuteHand = document.createElement('div');
+    minuteHand.className = 'hand minute';
+    analog.appendChild(minuteHand);
+
+    const secondHand = document.createElement('div');
+    secondHand.className = 'hand second';
+    analog.appendChild(secondHand);
+
+    // Center dot
+    const centerDot = document.createElement('div');
+    centerDot.className = 'center-dot';
+    analog.appendChild(centerDot);
+
+    return clockDiv;
+  }
+
+  // Update all clocks display
+  function updateClocks() {
+    currentClocks.forEach(cityId => {
+      const city = cities.find(c => c.id === cityId);
+      if (!city) return;
+
+      const clockDiv = document.getElementById(`clock-${city.id}`);
+      if (!clockDiv) return;
+
+      const tzInfo = clockDiv.querySelector('.timezone-info');
+      const digitalClock = clockDiv.querySelector('.digital');
+      const hourHand = clockDiv.querySelector('.hand.hour');
+      const minuteHand = clockDiv.querySelector('.hand.minute');
+      const secondHand = clockDiv.querySelector('.hand.second');
+
+      // Get now in city timezone
+      const now = new Date();
+      const options = {
+        timeZone: city.tz,
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      };
+      const localeTimeStr = now.toLocaleString('en-US', options);
+
+      // Parse time parts for digital clock and analog clock
+      const timeParts = localeTimeStr.match(/(\d{2}):(\d{2}):(\d{2})/);
+      const weekday = localeTimeStr.split(',')[0];
+      const dateStr = localeTimeStr.split(',')[1].trim();
+
+      if (!timeParts) return;
+      const h = parseInt(timeParts[1], 10);
+      const m = parseInt(timeParts[2], 10);
+      const s = parseInt(timeParts[3], 10);
+
+      // Set digital clock
+      digitalClock.textContent = `${pad(h)}:${pad(m)}:${pad(s)} (${weekday})`;
+
+      // Set timezone info: offset, DST status
+      const tzOffsetMinutes = getTimezoneOffsetMinutes(city.tz, now);
+      const offsetHours = Math.floor(Math.abs(tzOffsetMinutes) / 60);
+      const offsetMins = Math.abs(tzOffsetMinutes) % 60;
+      const offsetSign = tzOffsetMinutes <= 0 ? '+' : '-';
+      const dstActive = isDST(city.tz, now) ? 'Yes' : 'No';
+
+      tzInfo.textContent = `TimeZone: ${city.tz}, UTC${offsetSign}${pad(offsetHours)}:${pad(offsetMins)} | DST: ${dstActive}`;
+
+      // Update analog clock hands rotation
+      // Hour hand rotation = 30 degrees per hour + 0.5 degrees per minute
+      const hourAngle = (h % 12) * 30 + (m * 0.5);
+      // Minute hand rotation = 6 degrees per minute
+      const minuteAngle = m * 6;
+      // Second hand rotation = 6 degrees per second
+      const secondAngle = s * 6;
+
+      hourHand.style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
+      minuteHand.style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
+      secondHand.style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;
+    });
+  }
+
+  // Helper: pad number with leading zero
+  function pad(num) {
+    return num.toString().padStart(2, '0');
+  }
+
+  // Helper: Get timezone offset in minutes for a specific timezone and date
+  function getTimezoneOffsetMinutes(tz, date) {
+    const dt = new Date(date.toLocaleString('en-US', { timeZone: tz }));
+    return (date.getTime() - dt.getTime()) / (60 * 1000);
+  }
+
+  // Helper: Determine if DST is active in a timezone at a date
+  // Method: compare offset Jan 1 and current date offset
+  function isDST(tz, date) {
+    const jan = new Date(date.getFullYear(), 0, 1);
+    const jul = new Date(date.getFullYear(), 6, 1);
+
+    const stdOffset = Math.max(
+      getTimezoneOffsetMinutes(tz, jan),
+      getTimezoneOffsetMinutes(tz, jul)
+    );
+
+    return getTimezoneOffsetMinutes(tz, date) < stdOffset;
+  }
+
+  // Add clock to the page
+  function addClock(cityId) {
+    if (currentClocks.includes(cityId)) {
+      alert('This clock is already added.');
+      return;
     }
-  });
-  card.appendChild(removeBtn);
-
-  // Header
-  const header = document.createElement('div');
-  header.className = 'clock-header';
-  header.textContent = city.name;
-  card.appendChild(header);
-
-  // Subheader - Timezone name (short)
-  const subheader = document.createElement('div');
-  subheader.className = 'clock-subheader';
-  subheader.textContent = city.tz;
-  card.appendChild(subheader);
-
-  // Digital clock
-  const digital = document.createElement('div');
-  digital.className = 'digital-clock';
-  digital.textContent = '--:--:--';
-  card.appendChild(digital);
-
-  // Analog clock container
-  const analog = document.createElement('div');
-  analog.className = 'analog-clock';
-  analog.setAttribute('aria-hidden', 'true');
-
-  // Clock numbers 1-12
-  for (let i = 1; i <= 12; i++) {
-    const num = document.createElement('div');
-    num.className = 'number';
-    const angle = (i * 30) - 90; // start from top
-    const radius = 90;
-    const rad = angle * (Math.PI/180);
-    const x = radius * Math.cos(rad);
-    const y = radius * Math.sin(rad);
-    num.style.left = (110 + x - 12) + 'px';
-    num.style.top = (110 + y - 12) + 'px';
-    num.textContent = i;
-    analog.appendChild(num);
+    currentClocks.push(cityId);
+    renderClocks();
   }
 
-  // Hands
-  const handHour = document.createElement('div');
-  handHour.className = 'hand hour';
-  analog.appendChild(handHour);
-  const handMinute = document.createElement('div');
-  handMinute.className = 'hand minute';
-  analog.appendChild(handMinute);
-  const handSecond = document.createElement('div');
-  handSecond.className = 'hand second';
-  analog.appendChild(handSecond);
+  // Remove clock (optional feature, can implement if wanted)
+  // For now, no remove button provided
 
-  card.appendChild(analog);
+  // Render all clocks in the container
+  function renderClocks() {
+    clocksContainer.innerHTML = '';
+    currentClocks.forEach(cityId => {
+      const city = cities.find(c => c.id === cityId);
+      if (city) {
+        const clockEl = createClockElement(city);
+        clocksContainer.appendChild(clockEl);
+      }
+    });
+  }
 
-  return { card, digital, handHour, handMinute, handSecond, city };
-}
-
-let clockElements = {};
-
-function addClock(cityId) {
-  if (activeClocks.includes(cityId)) return;
-  activeClocks.push(cityId);
-  renderClocks();
-}
-function removeClock(cityId) {
-  activeClocks = activeClocks.filter(id => id !== cityId);
-  renderClocks();
-}
-function renderClocks() {
-  clocksDiv.innerHTML = '';
-  clockElements = {};
-  activeClocks.forEach(cityId => {
-    const clockObj = createClockCard(cityId);
-    if (clockObj) {
-      clocksDiv.appendChild(clockObj.card);
-      clockElements[cityId] = clockObj;
+  // Toggle night/day mode
+  function toggleNightMode() {
+    isNightMode = !isNightMode;
+    if (isNightMode) {
+      document.body.classList.add('night');
+      toggleModeBtn.textContent = 'Switch to Day Mode';
+    } else {
+      document.body.classList.remove('night');
+      toggleModeBtn.textContent = 'Switch to Night Mode';
     }
+  }
+
+  // Calculate time difference given city A's datetime, and city B
+  function calculateTimeDifference(cityAId, cityBId, dateStr, timeStr) {
+    if (!dateStr || !timeStr) {
+      resultDiv.textContent = 'Please enter both date and time.';
+      return;
+    }
+
+    const cityA = cities.find(c => c.id === cityAId);
+    const cityB = cities.find(c => c.id === cityBId);
+    if (!cityA || !cityB) {
+      resultDiv.textContent = 'Invalid city selection.';
+      return;
+    }
+
+    // Parse date and time from inputs
+    const dtString = dateStr + 'T' + timeStr + ':00';
+    // Parse this time as if it's in cityA timezone
+    const cityADate = new Date(dtString);
+
+    // Calculate cityA offset at given datetime
+    const offsetA = getTimezoneOffsetMinutes(cityA.tz, cityADate);
+    // Calculate UTC time from cityA local time
+    const utcTime = new Date(cityADate.getTime() + offsetA * 60 * 1000);
+
+    // Calculate cityB offset at the UTC time (converted to cityB local time)
+    const offsetB = getTimezoneOffsetMinutes(cityB.tz, utcTime);
+
+    // Calculate cityB local time
+    const cityBDate = new Date(utcTime.getTime() - offsetB * 60 * 1000);
+
+    // Calculate difference in hours and minutes between cityA and cityB at given time
+    // Difference = offsetB - offsetA (in minutes)
+    const diffMinutes = offsetB - offsetA;
+
+    const diffSign = diffMinutes >= 0 ? '+' : '-';
+    const diffH = Math.floor(Math.abs(diffMinutes) / 60);
+    const diffM = Math.abs(diffMinutes) % 60;
+
+    const formattedDiff = `${diffSign}${pad(diffH)}:${pad(diffM)}`;
+
+    // Show results
+    resultDiv.innerHTML = `
+      <p><strong>${cityA.name}</strong> local time: ${formatDateTime(cityADate, cityA.tz)}</p>
+      <p><strong>${cityB.name}</strong> local time: ${formatDateTime(cityBDate, cityB.tz)}</p>
+      <p><strong>Time difference (City B - City A):</strong> ${formattedDiff} hours</p>
+    `;
+  }
+
+  // Format date/time nicely for display with timezone info
+  function formatDateTime(date, tz) {
+    const options = {
+      timeZone: tz,
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+      weekday: 'short'
+    };
+    return date.toLocaleString('en-US', options);
+  }
+
+  // Setup initial city selects and render clocks
+  populateCitySelects();
+  renderClocks();
+  updateClocks();
+
+  // Update clocks every second
+  setInterval(updateClocks, 1000);
+
+  // Event listeners
+  addClockBtn.addEventListener('click', () => {
+    const selectedCity = cityAddSelect.value;
+    addClock(selectedCity);
   });
-  updateCityAddOptions();
-}
-function updateCityAddOptions() {
-  // Remove already active cities from add dropdown
-  for (const option of cityAddSelect.options) {
-    option.disabled = activeClocks.includes(option.value);
-  }
-}
 
-// Add city clock button
-document.getElementById('addCityBtn').addEventListener('click', () => {
-  const val = cityAddSelect.value;
-  if(val && !activeClocks.includes(val)) {
-    addClock(val);
-  }
-});
-
-// --- Clock updating ---
-function updateClocks() {
-  const now = new Date();
-  for (const cityId of activeClocks) {
-    const { digital, handHour, handMinute, handSecond, city } = clockElements[cityId];
-    const tz = city.tz;
-    const time = new Date(now.toLocaleString('en-US', { timeZone: tz }));
-
-    // Digital
-    digital.textContent = formatTime(time, tz);
-
-    // Analog
-    const hr = time.getHours() % 12;
-    const min = time.getMinutes();
-    const sec = time.getSeconds();
-
-    const hrAngle = (hr + min / 60) * 30; // 360/12 = 30
-    const minAngle = (min + sec / 60) * 6; // 360/60 = 6
-    const secAngle = sec * 6;
-
-    handHour.style.transform = `translateX(-50%) rotate(${hrAngle}deg)`;
-    handMinute.style.transform = `translateX(-50%) rotate(${minAngle}deg)`;
-    handSecond.style.transform = `translateX(-50%) rotate(${secAngle}deg)`;
-  }
-}
-renderClocks();
-updateClocks();
-setInterval(updateClocks, 1000);
-
-// --- Time difference calculator ---
-const calcButton = document.getElementById('calcButton');
-const calcResult = document.getElementById('calcResult');
-
-calcButton.addEventListener('click', () => {
-  const cityA = getCityById(calcCityA.value);
-  const cityB = getCityById(calcCityB.value);
-  const dateVal = document.getElementById('calcDate').value;
-  const timeVal = document.getElementById('calcTime').value;
-
-  if(!cityA || !cityB) {
-    calcResult.textContent = 'Please select both cities.';
-    return;
-  }
-  if(!dateVal) {
-    calcResult.textContent = 'Please select a date.';
-    return;
-  }
-  if(!timeVal) {
-    calcResult.textContent = 'Please select a time.';
-    return;
-  }
-
-  // Parse date and time in city A's timezone
-  // Construct an ISO string like "YYYY-MM-DDTHH:mm:ss" then convert to UTC
-  // Trick: use Intl.DateTimeFormat to get offset and adjust
-  try {
-    const dtString = dateVal + 'T' + timeVal + ':00';
-    // Create date in city A timezone using Intl API trick:
-    // https://stackoverflow.com/questions/15141762/how-to-initialize-a-javascript-date-to-a-particular-time-zone
-    const utcDate = new Date(new Date(dtString + 'Z').toLocaleString('en-US', { timeZone: cityA.tz }));
-    // Actually get timestamp at cityA local time:
-    // Wait, that's complicated, better to use DateTimeFormat to get offset
-
-    // Better way: create Date in UTC, then get offset for city A at that time:
-    const baseDate = new Date(dtString);
-    // Get offset of city A at that date/time
-    const offsetMinutesA = getTimezoneOffsetMinutes(cityA.tz, baseDate);
-    const offsetMinutesB = getTimezoneOffsetMinutes(cityB.tz, baseDate);
-
-    // Calculate UTC timestamp for city A input time:
-    const utcTimestamp = baseDate.getTime() - offsetMinutesA * 60 * 1000;
-
-    // Now get city B time timestamp:
-    const cityBTimestamp = utcTimestamp + offsetMinutesB * 60 * 1000;
-
-    // Calculate time difference in minutes
-    const diffMinutes = (offsetMinutesB - offsetMinutesA);
-
-    // Format difference in hours and minutes
-    const sign = diffMinutes >= 0 ? '+' : '-';
-    const absMin = Math.abs(diffMinutes);
-    const hoursDiff = Math.floor(absMin / 60);
-    const minutesDiff = absMin % 60;
-
-    // Show time in city B corresponding to city A's input
-    const cityBDate = new Date(cityBTimestamp);
-    const cityBTimeStr = cityBDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute:'2-digit' });
-
-    calcResult.textContent = 
-      `At ${timeVal} on ${dateVal} in ${cityA.name}, time in ${cityB.name} will be ${cityBTimeStr} (UTC offset difference: ${sign}${pad(hoursDiff)}:${pad(minutesDiff)})`;
-  } catch (err) {
-    calcResult.textContent = 'Error calculating time difference.';
-  }
-});
-
-// Function to get timezone offset in minutes for a given timezone and date
-function getTimezoneOffsetMinutes(tz, date) {
-  // Format date in timezone as ISO string with timezone offset
-  const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
-    hour12: false,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  toggleModeBtn.addEventListener('click', () => {
+    toggleNightMode();
   });
-  const parts = dtf.formatToParts(date);
-  // Rebuild formatted date string to parse timezone offset
-  const filled = {};
-  for (const part of parts) {
-    filled[part.type] = part.value;
+
+  calcBtn.addEventListener('click', () => {
+    const cityAId = calcCityA.value;
+    const cityBId = calcCityB.value;
+    const dateStr = calcDate.value;
+    const timeStr = calcTime.value;
+    calculateTimeDifference(cityAId, cityBId, dateStr, timeStr);
+  });
+
+  // Set default date input to today
+  calcDate.value = new Date().toISOString().split('T')[0];
+  // Set default time to current time in 24h format
+  function setDefaultTime() {
+    const now = new Date();
+    const h = pad(now.getHours());
+    const m = pad(now.getMinutes());
+    calcTime.value = `${h}:${m}`;
   }
-  // Build a string "YYYY-MM-DDTHH:mm:ss" but local to tz (ignores offset)
-  const localDateString = `${filled.year}-${filled.month}-${filled.day}T${filled.hour}:${filled.minute}:${filled.second}`;
-  // Parse as local time
-  const localDate = new Date(localDateString);
+  setDefaultTime();
 
-  // Calculate difference between UTC and local date in minutes
-  // offset = (UTC time - local time) in minutes
-  const offset = (date.getTime() - localDate.getTime()) / (60 * 1000);
-  return offset;
-}
-
-// Set default date and time to now in calculator
-function setCalcDefaults() {
-  const now = new Date();
-  document.getElementById('calcDate').valueAsDate = now;
-  document.getElementById('calcTime').value = pad(now.getHours()) + ':' + pad(now.getMinutes());
-}
-setCalcDefaults();
 </script>
+
 </body>
 </html>
